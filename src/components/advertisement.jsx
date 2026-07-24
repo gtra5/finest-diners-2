@@ -4,16 +4,13 @@ import img1 from "../assets/bugers.png";
 import { MoveRight } from "lucide-react";
 import img2 from "../assets/chicken_2_compressed.png";
 import api from "../services/api";
-import JellyWave from "./ui/jelly";
 import MobileBurgerHero from "../components/MobileBurgerHero";
 
 const STRIP_IMAGES = [img1, img2, img1, img1, img1, img1, img1, img1, img1];
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
-
 const DESKTOP_LINES = ["OUR FOOD"];
 
 export default function BurgerFuelHero() {
-  const [offset, setOffset] = useState(0);
   const [Trending, setTrending] = useState([]);
   const [Loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -22,12 +19,11 @@ export default function BurgerFuelHero() {
     vh: 350,
     tileW: 400,
   });
-  const rafRef = useRef(null);
-  const startRef = useRef(null);
+
   const containerRef = useRef(null);
-  const SPEED = 40;
   const BG = "#050A0A";
 
+  // Track layout dimensions securely
   useEffect(() => {
     const updateDimensions = () => {
       if (!containerRef.current) return;
@@ -52,28 +48,19 @@ export default function BurgerFuelHero() {
     return () => resizeObserver.disconnect();
   }, []);
 
+  // Fetch menu item data
   useEffect(() => {
+    if (!RESTAURANT_ID) return;
+
     api
       .get(`/food/menu/${RESTAURANT_ID}`)
-      .then(({ data }) => setTrending(data.menu.slice(7, 10)))
+      .then(({ data }) => setTrending(data.menu ? data.menu.slice(7, 10) : []))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (isMobile) return; // no animation on mobile
-    const STRIP_TOTAL_W = dimensions.tileW * STRIP_IMAGES.length;
-    const animate = (ts) => {
-      if (!startRef.current) startRef.current = ts;
-      const elapsed = (ts - startRef.current) / 1000;
-      setOffset((elapsed * SPEED) % STRIP_TOTAL_W);
-      rafRef.current = requestAnimationFrame(animate);
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [dimensions.tileW, isMobile]);
-
   const allImages = [...STRIP_IMAGES, ...STRIP_IMAGES];
+  const totalStripWidth = dimensions.tileW * STRIP_IMAGES.length;
 
   const FONT_SIZE = Math.max(120, dimensions.vw * 0.3);
   const LINE_HEIGHT = FONT_SIZE * 1.05;
@@ -94,6 +81,19 @@ export default function BurgerFuelHero() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+        @keyframes infiniteScroll {
+          0% {
+            transform: translateX(0px);
+          }
+          100% {
+            transform: translateX(-${totalStripWidth}px);
+          }
+        }
+
+        .animated-strip-group {
+          animation: infiniteScroll 25s linear infinite;
+        }
       `}</style>
 
       <div className="bg-[#6B7C2F] font-sans overflow-x-hidden">
@@ -101,10 +101,10 @@ export default function BurgerFuelHero() {
           className="relative flex flex-col justify-center overflow-hidden pt-[max(30px,4vh)] md:pt-[max(68px,8vh)]"
           style={{ minHeight: "100vh" }}
         >
-          {/* ── MOBILE: delegated to MobileBurgerHero ── */}
+          {/* ── MOBILE ── */}
           {isMobile && <MobileBurgerHero containerRef={containerRef} />}
 
-          {/* ── DESKTOP: animated scrolling strip ── */}
+          {/* ── DESKTOP: Animated Scrolling Strip ── */}
           {!isMobile && (
             <div
               ref={containerRef}
@@ -144,10 +144,10 @@ export default function BurgerFuelHero() {
                 ))}
 
                 <g clipPath="url(#letterClip)">
-                  <g transform={`translate(${-offset}, 0)`}>
+                  <g className="animated-strip-group">
                     {allImages.map((src, i) => (
                       <image
-                        key={`${src}-${i}`}
+                        key={`strip-img-${i}`}
                         href={src}
                         x={i * dimensions.tileW}
                         y={0}
@@ -179,7 +179,7 @@ export default function BurgerFuelHero() {
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-6 gap-6 sm:gap-8">
             <div className="flex flex-col shrink-0">
               <h1
-                className="text-[#111] leading-none text-4xl  md:text-[clamp(20px,5vw,56px)]"
+                className="text-[#111] leading-none text-4xl md:text-[clamp(20px,5vw,56px)]"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   lineHeight: "1",
@@ -258,10 +258,10 @@ export default function BurgerFuelHero() {
 
             {/* Trending cards */}
             {!Loading && Trending.length > 0 && (
-              <div className="flex gap-3 sm:gap-4 overflow-x-auto min-w-0 pb-2 overflow-auto no-scrollbar">
-                {Trending.map((item) => (
+              <div className="flex gap-3 sm:gap-4 overflow-x-auto min-w-0 pb-2 no-scrollbar">
+                {Trending.map((item, index) => (
                   <div
-                    key={item.id}
+                    key={item._id || item.id || `trending-${index}`}
                     className="flex flex-col items-start gap-2 rounded-lg sm:rounded-2xl p-2 sm:p-3 shrink-0 bg-black bg-opacity-20"
                     style={{ width: "clamp(140px, 35vw, 230px)" }}
                   >
