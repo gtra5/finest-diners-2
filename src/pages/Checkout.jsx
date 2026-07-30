@@ -44,14 +44,7 @@ export default function Checkout() {
   const { cartItems, totalPrice, restaurantId, clearCart } = useCart();
   const { getCurrentLocation, loading: geoLoading, error: geoError } = useGeolocation();
 
-  const [address, setAddress] = useState({
-    street: "",
-    aptSuite: "",
-    gateCode: "",
-    notes: "",
-  });
   const [coords, setCoords] = useState({ lat: "", lng: "" });
-  const [locationData, setLocationData] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null);
@@ -61,50 +54,57 @@ export default function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
-  // Get location from navigation state (passed from Cart)
+  // Auto-fetch GPS location on mount
   useEffect(() => {
-    if (location.state?.location) {
-      const { latitude, longitude } = location.state.location;
-      setCoords({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
-    }
-  }, [location.state]);
+    const fetchGPSLocation = async () => {
+      setLoadingLocation(true);
+      setLocationError(null);
+      
+      // First try to get from navigation state (passed from Cart)
+      if (location.state?.location) {
+        const { latitude, longitude } = location.state.location;
+        setCoords({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
+        setLoadingLocation(false);
+        return;
+      }
+
+      // Otherwise fetch fresh GPS location
+      const location = await getCurrentLocation();
+      if (location) {
+        setCoords({ lat: location.latitude.toFixed(6), lng: location.longitude.toFixed(6) });
+      } else {
+        setLocationError("Failed to get your GPS location. Please enable location access.");
+      }
+      setLoadingLocation(false);
+    };
+
+    fetchGPSLocation();
+  }, [location.state, getCurrentLocation]);
 
   // ── Order totals (from the real cart) ──
   const itemsTotal = totalPrice || 0;
   const tax = itemsTotal * TAX_RATE;
   const total = itemsTotal + DELIVERY_FEE + (itemsTotal > 0 ? tax : 0);
 
-  // Fetch location based on IP
-  const fetchLocationByIP = async () => {
+  // Refresh GPS location
+  const handleRefreshLocation = async () => {
     setLoadingLocation(true);
     setLocationError(null);
-    try {
-      const data = await getLocationByIP();
-      setLocationData(data);
-    } catch (error) {
-      setLocationError("Failed to detect your location. Please enter your address manually.");
-    } finally {
-      setLoadingLocation(false);
-    }
-  };
-
-  // Get current GPS location
-  const handleGetLocation = async () => {
     const location = await getCurrentLocation();
     if (location) {
       setCoords({ lat: location.latitude.toFixed(6), lng: location.longitude.toFixed(6) });
+    } else {
+      setLocationError("Failed to get your GPS location. Please enable location access.");
     }
+    setLoadingLocation(false);
   };
-
-  // Auto-fetch IP location on mount
-  useEffect(() => {
-    fetchLocationByIP();
-  }, []);
 
   // ── Validation ──
   const validate = () => {
     const next = {};
-    if (!address.street.trim()) next.street = "Street address is required.";
+    if (!coords.lat || !coords.lng) {
+      next.coords = "GPS coordinates are required for delivery.";
+    }
     if (!paymentMethod) next.payment = "Select a payment method to continue.";
     setErrors(next);
     return next;
@@ -117,14 +117,6 @@ export default function Checkout() {
 
     setSubmitting(true);
     try {
-      const deliveryAddress = [
-        address.street,
-        address.aptSuite,
-        address.gateCode ? `Gate code: ${address.gateCode}` : null,
-      ]
-        .filter(Boolean)
-        .join(", ");
-
       const order = await createOrder({
         restaurant: restaurantId,
         items: cartItems.map((item) => ({
@@ -134,11 +126,10 @@ export default function Checkout() {
           quantity: item.quantity,
           imageUrl: item.imageUrl,
         })),
-        deliveryAddress,
+        deliveryAddress: `GPS Coordinates: ${coords.lat}, ${coords.lng}`,
         paymentMethod,
-        notes: address.notes,
-        latitude: coords.lat ? parseFloat(coords.lat) : null,
-        longitude: coords.lng ? parseFloat(coords.lng) : null,
+        latitude: parseFloat(coords.lat),
+        longitude: parseFloat(coords.lng),
       });
 
       if (paymentMethod !== "cod") {
@@ -254,113 +245,62 @@ export default function Checkout() {
                   Delivery Location
                 </h2>
                 <p className="text-xs mt-1" style={{ fontFamily: BODY_FONT, color: "rgba(63,74,28,0.55)" }}>
-                  Enter your delivery address
+                  GPS coordinates for instant driver navigation
                 </p>
               </div>
 
-              {locationData && (
-                <div className="mb-4 flex items-start gap-2.5 rounded-xl px-3.5 py-3" style={{ background: COLORS.parchment }}>
-                  <MapPin className="w-4 h-4 shrink-0 mt-0.5" style={{ color: COLORS.canopy }} />
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ fontFamily: DISPLAY_FONT, color: COLORS.moss }}>
-                      Detected Location
-                    </p>
-                    <p className="text-sm" style={{ fontFamily: BODY_FONT, color: COLORS.canopy }}>
-                      {locationData.city}, {locationData.region}, {locationData.country}
-                    </p>
-                  </div>
+              {loadingLocation && (
+                <div className="mb-4 flex items-center gap-2 text-sm" style={{ fontFamily: BODY_FONT, color: "rgba(63,74,28,0.7)" }}>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Getting your GPS location...
                 </div>
               )}
 
               {locationError && (
-                <p className="mb-3 flex items-center gap-1.5 text-xs" style={{ color: COLORS.clay, fontFamily: BODY_FONT }}>
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {locationError}
-                </p>
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl px-3.5 py-3" style={{ background: "rgba(179,69,43,0.1)" }}>
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: COLORS.clay }} />
+                  <div>
+                    <p className="text-sm" style={{ fontFamily: BODY_FONT, color: COLORS.clay }}>{locationError}</p>
+                  </div>
+                </div>
               )}
 
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <button
-                  type="button"
-                  onClick={handleGetLocation}
-                  disabled={geoLoading}
-                  className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition hover:opacity-90 disabled:opacity-60"
-                  style={{ background: COLORS.canopy, color: COLORS.cream, fontFamily: DISPLAY_FONT }}
-                >
-                  {geoLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Navigation className="w-4 h-4" />
-                  )}
-                  {geoLoading ? "Getting location…" : "Use My Current Location"}
-                </button>
-                {coords.lat && coords.lng && (
-                  <p className="text-xs" style={{ fontFamily: MONO_FONT, color: "rgba(63,74,28,0.55)" }}>
-                    {coords.lat}, {coords.lng}
-                  </p>
+              {coords.lat && coords.lng && (
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl px-3.5 py-4" style={{ background: COLORS.parchment }}>
+                  <MapPin className="w-5 h-5 shrink-0 mt-0.5" style={{ color: COLORS.canopy }} />
+                  <div className="flex-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ fontFamily: DISPLAY_FONT, color: COLORS.moss }}>
+                      Your GPS Coordinates
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase mb-1" style={{ fontFamily: DISPLAY_FONT, color: "rgba(63,74,28,0.6)" }}>Latitude</p>
+                        <p className="text-lg font-mono font-semibold" style={{ fontFamily: MONO_FONT, color: COLORS.canopy }}>{coords.lat}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase mb-1" style={{ fontFamily: DISPLAY_FONT, color: "rgba(63,74,28,0.6)" }}>Longitude</p>
+                        <p className="text-lg font-mono font-semibold" style={{ fontFamily: MONO_FONT, color: COLORS.canopy }}>{coords.lng}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleRefreshLocation}
+                disabled={loadingLocation}
+                className="w-full flex items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition hover:opacity-90 disabled:opacity-60"
+                style={{ background: COLORS.canopy, color: COLORS.cream, fontFamily: DISPLAY_FONT }}
+              >
+                {loadingLocation ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Navigation className="w-4 h-4" />
                 )}
-              </div>
+                {loadingLocation ? "Refreshing location…" : "Refresh GPS Location"}
+              </button>
 
-              {geoError && (
-                <p className="mb-3 flex items-center gap-1.5 text-xs" style={{ color: COLORS.clay, fontFamily: BODY_FONT }}>
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {geoError}
-                </p>
-              )}
-
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="text-xs font-semibold flex items-center gap-1.5 mb-1.5" style={{ fontFamily: DISPLAY_FONT, color: COLORS.moss }}>
-                    <Home className="w-3.5 h-3.5" /> Street Address
-                  </label>
-                  <input
-                    className={inputBase}
-                    style={inputStyle(errors.street)}
-                    placeholder="12 Admiralty Way"
-                    value={address.street}
-                    onChange={(e) => setAddress((p) => ({ ...p, street: e.target.value }))}
-                  />
-                  {fieldError("street")}
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold flex items-center gap-1.5 mb-1.5" style={{ fontFamily: DISPLAY_FONT, color: COLORS.moss }}>
-                    <Building2 className="w-3.5 h-3.5" /> Apartment / Suite / Floor (optional)
-                  </label>
-                  <input
-                    className={inputBase}
-                    style={inputStyle()}
-                    placeholder="Flat 3B, 2nd Floor"
-                    value={address.aptSuite}
-                    onChange={(e) => setAddress((p) => ({ ...p, aptSuite: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold flex items-center gap-1.5 mb-1.5" style={{ fontFamily: DISPLAY_FONT, color: COLORS.moss }}>
-                    <KeyRound className="w-3.5 h-3.5" /> Gate / Access Code (optional)
-                  </label>
-                  <input
-                    className={inputBase}
-                    style={inputStyle()}
-                    placeholder="Optional"
-                    value={address.gateCode}
-                    onChange={(e) => setAddress((p) => ({ ...p, gateCode: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold flex items-center gap-1.5 mb-1.5" style={{ fontFamily: DISPLAY_FONT, color: COLORS.moss }}>
-                    <StickyNote className="w-3.5 h-3.5" /> Delivery Notes for the Driver (optional)
-                  </label>
-                  <textarea
-                    rows={2}
-                    className={`${inputBase} resize-none`}
-                    style={inputStyle()}
-                    placeholder='e.g. "Leave at the back door"'
-                    value={address.notes}
-                    onChange={(e) => setAddress((p) => ({ ...p, notes: e.target.value }))}
-                  />
-                </div>
-              </div>
+              {fieldError("coords")}
             </motion.section>
 
             {/* Payment section */}
