@@ -158,60 +158,7 @@ export default function CravHero() {
           {/* Soft scrim so the finer serif type stays legible over the video */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/25 z-[5] pointer-events-none" />
 
-          <motion.div
-            className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: {},
-              visible: { transition: { staggerChildren: 0.12, delayChildren: 0.2 } },
-            }}
-          >
-            <motion.span
-              variants={fadeUp}
-              className="uppercase tracking-[0.35em] text-white/70 text-xs sm:text-sm mb-5 font-medium"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            >
-              Curated Menus · Delivered With Care
-            </motion.span>
-
-            <motion.h1
-              variants={fadeUp}
-              className="text-white text-6xl sm:text-8xl leading-[1.05] tracking-tight font-normal"
-              style={{ fontFamily: "'Fraunces', serif" }}
-            >
-              Exceptional Flavor,
-              <br />
-              <span className="italic font-light">Delivered.</span>
-            </motion.h1>
-
-            <motion.p
-              variants={fadeUp}
-              className="mt-7 max-w-md text-white/80 text-base sm:text-lg font-light leading-relaxed"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            >
-              Chef-crafted dishes made from the finest seasonal ingredients —
-              brought to your door, always at its best.
-            </motion.p>
-
-            <motion.div
-              variants={fadeUp}
-              className="mt-10 flex flex-col sm:flex-row gap-4 items-center"
-            >
-              <MagneticButton
-                className="bg-[#F5F0E6] text-[#1a1f14] font-medium px-10 py-3.5 rounded-full tracking-wide text-sm"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                Order Now
-              </MagneticButton>
-              <MagneticButton
-                className="border border-white/50 text-white font-medium px-10 py-3.5 rounded-full tracking-wide text-sm backdrop-blur-sm hover:border-white transition-colors"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                View the Menu
-              </MagneticButton>
-            </motion.div>
-          </motion.div>
+        
 
           <div
             className="absolute bottom-0 left-0 w-full pointer-events-none"

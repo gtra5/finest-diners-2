@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import api, { updateLocation as updateLocationApi } from '../services/api';
+import api from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -39,31 +39,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateLocation = async (latitude, longitude) => {
-    try {
-      const data = await updateLocationApi(latitude, longitude);
-      // Update user state with new location data
-      setUser((prev) => ({
-        ...prev,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        locationUpdatedAt: data.locationUpdatedAt,
-      }));
-      // Update localStorage
-      localStorage.setItem('user', JSON.stringify({
-        ...user,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        locationUpdatedAt: data.locationUpdatedAt,
-      }));
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateLocation }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

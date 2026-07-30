@@ -1,5 +1,15 @@
 import { motion, useAnimationFrame } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
+import { 
+  Sprout, 
+  ChefHat, 
+  Zap, 
+  Recycle, 
+  Briefcase, 
+  Laptop, 
+  Wrench 
+} from "lucide-react";
+
 import HeroBg from "../assets/backgroundVectors.svg";
 import img1 from "../assets/advertisment.jpg";
 import img2 from "../assets/front-view-smiley-man-holding-pizza.jpg";
@@ -20,25 +30,25 @@ const BG = "#050A0A";
 /* ─── Data ──────────────────────────────────────────────────── */
 const PILLARS = [
   {
-    icon: "🌱",
+    icon: Sprout,
     label: "SOURCING",
     title: "Farm to Table",
     body: "Every ingredient traced back to its origin. We partner directly with local farms who share our commitment to quality and sustainability.",
   },
   {
-    icon: "👨‍🍳",
+    icon: ChefHat,
     label: "CRAFT",
     title: "Chef-Led Kitchens",
     body: "Our kitchens are led by experienced chefs who treat every order as a signature dish — not a conveyor-belt product.",
   },
   {
-    icon: "⚡",
+    icon: Zap,
     label: "SPEED",
     title: "Precision Delivery",
     body: "Real-time tracking, optimised routing, and dedicated staff mean your food arrives hot and on time — every time.",
   },
   {
-    icon: "♻️",
+    icon: Recycle,
     label: "RESPONSIBILITY",
     title: "Zero-Waste Packaging",
     body: "All packaging is compostable or fully recyclable. We're working towards a net-zero delivery operation by 2027.",
@@ -49,15 +59,25 @@ const TEAM = [
   {
     name: "Olokode Elijah",
     role: "Founder & CEO",
-    emoji: "👩🏾‍💼",
+    icon: Briefcase,
     initials: "EO",
   },
-  { name: "Liam Chen", role: "Head of Culinary", emoji: "👨🏻‍🍳", initials: "LC" },
-  { name: "Sofia Ramos", role: "Operations Lead", emoji: "👩🏽‍💻", initials: "SR" },
+  { 
+    name: "Liam Chen", 
+    role: "Head of Culinary", 
+    icon: ChefHat, 
+    initials: "LC" 
+  },
+  { 
+    name: "Sofia Ramos", 
+    role: "Operations Lead", 
+    icon: Laptop, 
+    initials: "SR" 
+  },
   {
     name: "Daniel Müller",
     role: "Delivery Logistics",
-    emoji: "🧑🏼‍🔧",
+    icon: Wrench,
     initials: "DM",
   },
 ];
@@ -156,7 +176,7 @@ export default function About() {
         <img
           src={HeroBg}
           alt=""
-          className="absolute  inset-0 w-full h-full object-cover pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ mixBlendMode: "multiply" }}
         />
 
@@ -285,17 +305,6 @@ export default function About() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          {/* <StickerPeel
-            imageSrc={logo}
-            width={200}
-            rotate={0}
-            peelBackHoverPct={30}
-            peelBackActivePct={40}
-            shadowIntensity={0.5}
-            lightingIntensity={0.1}
-            initialPosition={{ x: -100, y: 100 }}
-            peelDirection={0}
-          /> */}
           <h1
             className="uppercase"
             style={{
@@ -309,17 +318,15 @@ export default function About() {
               userSelect: "none",
               fontFamily: "Arial Black, sans-serif",
               textAlign: "center",
-              // pulls carousel up to overlap slightly if desired
               zIndex: 0,
             }}
           >
             our story
           </h1>
           <TimelineSlider />
-
-          {/* Bottom rule + tagline */}
         </div>
       </section>
+
       {/* ── TEAM ─────────────────────────────────────────────── */}
       <section
         className="px-6 lg:px-12 py-16 border-b"
@@ -338,48 +345,50 @@ export default function About() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {TEAM.map((member, i) => (
-            <motion.div
-              key={member.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -6 }}
-              className="flex flex-col items-center gap-4 p-6 border text-center"
-              style={{ background: SURFACE, borderColor: BORDER }}
-            >
-              {/* Initials avatar with olive ring */}
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-sm"
-                style={{
-                  background: OLIVE_DIM,
-                  color: OLIVE_LIGHT,
-                  border: `2px solid ${OLIVE}`,
-                  letterSpacing: "0.05em",
-                }}
+          {TEAM.map((member, i) => {
+            const Icon = member.icon;
+            return (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                whileHover={{ y: -6 }}
+                className="flex flex-col items-center gap-4 p-6 border text-center"
+                style={{ background: SURFACE, borderColor: BORDER }}
               >
-                {member.initials}
-              </div>
-              <div>
-                <p className="font-bold text-white text-sm">{member.name}</p>
-                <p
-                  className="text-[10px] tracking-widest mt-1 uppercase font-mono"
-                  style={{ color: "#5a6a5a" }}
+                {/* Icon avatar with olive ring */}
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-sm"
+                  style={{
+                    background: OLIVE_DIM,
+                    color: OLIVE_LIGHT,
+                    border: `2px solid ${OLIVE}`,
+                  }}
                 >
-                  {member.role}
-                </p>
-              </div>
-            </motion.div>
-          ))}
+                  <Icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="font-bold text-white text-sm">{member.name}</p>
+                  <p
+                    className="text-[10px] tracking-widest mt-1 uppercase font-mono"
+                    style={{ color: "#5a6a5a" }}
+                  >
+                    {member.role}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
+
       {/* ── OUR PILLARS ──────────────────────────────────────── */}
       <section
         className="px-8 py-8 bg-white"
         style={{ borderColor: BORDER, backgroundImage: `url(${HeroBg})` }}
       >
-        {/* Heading */}
         <div
           style={{
             fontSize: "clamp(28px, 6vw, 100px)",
@@ -438,7 +447,6 @@ export default function About() {
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ opacity: 0.04, zIndex: 0 }}
         />
-        
 
         <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row items-start lg:items-end justify-between gap-12">
           {/* Left: text */}
@@ -477,7 +485,6 @@ export default function About() {
 
           {/* Right: stat strip + button */}
           <div className="flex flex-col items-start lg:items-end gap-8">
-            {/* Mini stats */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -512,7 +519,6 @@ export default function About() {
               ))}
             </motion.div>
 
-            {/* Divider */}
             <div
               style={{
                 width: "100%",
@@ -521,7 +527,6 @@ export default function About() {
               }}
             />
 
-            {/* Button */}
             <motion.a
               href="/"
               initial={{ opacity: 0 }}
@@ -556,9 +561,7 @@ export default function About() {
             </motion.a>
           </div>
         </div>
-      
       </section>
-      
     </div>
   );
 }

@@ -49,16 +49,19 @@ export const verifyPayment = async (reference) => {
   return data;
 };
 
-// Location API functions
-export const updateLocation = async (latitude, longitude) => {
-  const { data } = await api.post('/location', {
-    latitude,
-    longitude,
-  });
+// Order API functions
+export const createOrder = async (orderData) => {
+  const { data } = await api.post('/orders', orderData);
   return data;
 };
 
-export const getLocation = async () => {
+export const getOrder = async (orderId) => {
+  const { data } = await api.get(`/orders/${orderId}`);
+  return data;
+};
+
+// Location API function - IP-based geolocation
+export const getLocationByIP = async () => {
   const { data } = await api.get('/location');
   return data;
 };
