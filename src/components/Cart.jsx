@@ -1,19 +1,38 @@
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useGeolocation } from '../hooks/useGeolocation';
+import { useState } from 'react';
 
 const Cart = ({ isOpen, onClose }) => {
   const { cartItems, removeItem, addItem, totalPrice, totalItems, restaurantId } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { getCurrentLocation, loading: geoLoading, error: geoError } = useGeolocation();
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
 
-  const handleCheckout = () => {
-    onClose();
+  const handleCheckout = async () => {
     if (!user) {
+      onClose();
       navigate('/login');
-    } else {
-      navigate('/checkout');
+      return;
     }
+
+    // Request location before checkout
+    const location = await getCurrentLocation();
+    if (!location) {
+      setShowLocationPrompt(true);
+      return;
+    }
+
+    onClose();
+    navigate('/checkout', { state: { location } });
+  };
+
+  const handleProceedWithoutLocation = () => {
+    setShowLocationPrompt(false);
+    onClose();
+    navigate('/checkout');
   };
 
   if (!isOpen) return null;
@@ -75,13 +94,52 @@ const Cart = ({ isOpen, onClose }) => {
             </div>
             <button
               onClick={handleCheckout}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-colors"
+              disabled={geoLoading}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
             >
-              Proceed to Checkout
+              {geoLoading ? 'Getting location...' : 'Proceed to Checkout'}
             </button>
           </div>
         )}
       </div>
+
+      {/* Location Prompt Modal */}
+      {showLocationPrompt && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowLocationPrompt(false)} />
+          <div className="relative bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-800 mb-3">Enable Location</h3>
+            <p className="text-gray-600 mb-4">
+              To ensure accurate delivery, please enable your location. This helps us find your exact address.
+            </p>
+            {geoError && (
+              <p className="text-red-500 text-sm mb-4">{geoError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  const location = await getCurrentLocation();
+                  if (location) {
+                    setShowLocationPrompt(false);
+                    onClose();
+                    navigate('/checkout', { state: { location } });
+                  }
+                }}
+                disabled={geoLoading}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl transition-colors disabled:opacity-50"
+              >
+                {geoLoading ? 'Getting location...' : 'Enable Location'}
+              </button>
+              <button
+                onClick={handleProceedWithoutLocation}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2.5 rounded-xl transition-colors"
+              >
+                Continue Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

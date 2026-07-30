@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
   MapPin,
@@ -16,11 +16,13 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowRight,
+  Navigation,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { initializePayment, createOrder, getLocationByIP } from "../services/api";
+import { useGeolocation } from "../hooks/useGeolocation";
 import { COLORS, DISPLAY_FONT, BODY_FONT, MONO_FONT, FONT_IMPORT_URL } from "../theme/brand";
 
 const formatNaira = (n) =>
@@ -37,8 +39,10 @@ const PAYMENT_METHODS = [
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { cartItems, totalPrice, restaurantId, clearCart } = useCart();
+  const { getCurrentLocation, loading: geoLoading, error: geoError } = useGeolocation();
 
   const [address, setAddress] = useState({
     street: "",
@@ -46,6 +50,7 @@ export default function Checkout() {
     gateCode: "",
     notes: "",
   });
+  const [coords, setCoords] = useState({ lat: "", lng: "" });
   const [locationData, setLocationData] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState(null);
@@ -55,6 +60,14 @@ export default function Checkout() {
   const [placeError, setPlaceError] = useState(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState(null);
+
+  // Get location from navigation state (passed from Cart)
+  useEffect(() => {
+    if (location.state?.location) {
+      const { latitude, longitude } = location.state.location;
+      setCoords({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
+    }
+  }, [location.state]);
 
   // ── Order totals (from the real cart) ──
   const itemsTotal = totalPrice || 0;
@@ -75,7 +88,15 @@ export default function Checkout() {
     }
   };
 
-  // Auto-fetch location on mount
+  // Get current GPS location
+  const handleGetLocation = async () => {
+    const location = await getCurrentLocation();
+    if (location) {
+      setCoords({ lat: location.latitude.toFixed(6), lng: location.longitude.toFixed(6) });
+    }
+  };
+
+  // Auto-fetch IP location on mount
   useEffect(() => {
     fetchLocationByIP();
   }, []);
@@ -116,6 +137,8 @@ export default function Checkout() {
         deliveryAddress,
         paymentMethod,
         notes: address.notes,
+        latitude: coords.lat ? parseFloat(coords.lat) : null,
+        longitude: coords.lng ? parseFloat(coords.lng) : null,
       });
 
       if (paymentMethod !== "cod") {
@@ -252,6 +275,34 @@ export default function Checkout() {
               {locationError && (
                 <p className="mb-3 flex items-center gap-1.5 text-xs" style={{ color: COLORS.clay, fontFamily: BODY_FONT }}>
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {locationError}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <button
+                  type="button"
+                  onClick={handleGetLocation}
+                  disabled={geoLoading}
+                  className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition hover:opacity-90 disabled:opacity-60"
+                  style={{ background: COLORS.canopy, color: COLORS.cream, fontFamily: DISPLAY_FONT }}
+                >
+                  {geoLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Navigation className="w-4 h-4" />
+                  )}
+                  {geoLoading ? "Getting location…" : "Use My Current Location"}
+                </button>
+                {coords.lat && coords.lng && (
+                  <p className="text-xs" style={{ fontFamily: MONO_FONT, color: "rgba(63,74,28,0.55)" }}>
+                    {coords.lat}, {coords.lng}
+                  </p>
+                )}
+              </div>
+
+              {geoError && (
+                <p className="mb-3 flex items-center gap-1.5 text-xs" style={{ color: COLORS.clay, fontFamily: BODY_FONT }}>
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {geoError}
                 </p>
               )}
 
