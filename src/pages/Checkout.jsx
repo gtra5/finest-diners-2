@@ -21,7 +21,7 @@ import {
 
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
-import { initializePayment, createOrder, getLocationByIP } from "../services/api";
+import { initializePayment, createOrder, getAddressFromCoords } from "../services/api";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { COLORS, DISPLAY_FONT, BODY_FONT, MONO_FONT, FONT_IMPORT_URL } from "../theme/brand";
 
@@ -45,6 +45,8 @@ export default function Checkout() {
   const { getCurrentLocation, loading: geoLoading, error: geoError } = useGeolocation();
 
   const [coords, setCoords] = useState({ lat: "", lng: "" });
+  const [readableAddress, setReadableAddress] = useState("");
+  const [addressLoading, setAddressLoading] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null);
@@ -54,24 +56,40 @@ export default function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
+  // Stores the raw coordinates AND looks up a human-readable address for them.
+  // Reverse geocoding failure is non-fatal — the raw lat/lng is already enough
+  // for the rider to navigate, the address is just a friendlier confirmation.
+  const updateCoordsAndAddress = async (latitude, longitude) => {
+    setCoords({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
+    setAddressLoading(true);
+    try {
+      const address = await getAddressFromCoords(latitude, longitude);
+      setReadableAddress(address.formattedAddress || "");
+    } catch {
+      setReadableAddress("");
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
   // Auto-fetch GPS location on mount
   useEffect(() => {
     const fetchGPSLocation = async () => {
       setLoadingLocation(true);
       setLocationError(null);
-      
+
       // First try to get from navigation state (passed from Cart)
       if (location.state?.location) {
         const { latitude, longitude } = location.state.location;
-        setCoords({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
+        await updateCoordsAndAddress(latitude, longitude);
         setLoadingLocation(false);
         return;
       }
 
       // Otherwise fetch fresh GPS location
-      const location = await getCurrentLocation();
-      if (location) {
-        setCoords({ lat: location.latitude.toFixed(6), lng: location.longitude.toFixed(6) });
+      const gpsLocation = await getCurrentLocation();
+      if (gpsLocation) {
+        await updateCoordsAndAddress(gpsLocation.latitude, gpsLocation.longitude);
       } else {
         setLocationError("Failed to get your GPS location. Please enable location access.");
       }
@@ -92,7 +110,7 @@ export default function Checkout() {
     setLocationError(null);
     const location = await getCurrentLocation();
     if (location) {
-      setCoords({ lat: location.latitude.toFixed(6), lng: location.longitude.toFixed(6) });
+      await updateCoordsAndAddress(location.latitude, location.longitude);
     } else {
       setLocationError("Failed to get your GPS location. Please enable location access.");
     }
@@ -126,7 +144,7 @@ export default function Checkout() {
           quantity: item.quantity,
           imageUrl: item.imageUrl,
         })),
-        deliveryAddress: `GPS Coordinates: ${coords.lat}, ${coords.lng}`,
+        deliveryAddress: readableAddress || `GPS Coordinates: ${coords.lat}, ${coords.lng}`,
         paymentMethod,
         latitude: parseFloat(coords.lat),
         longitude: parseFloat(coords.lng),
@@ -271,6 +289,17 @@ export default function Checkout() {
                     <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ fontFamily: DISPLAY_FONT, color: COLORS.moss }}>
                       Your GPS Coordinates
                     </p>
+
+                    {addressLoading ? (
+                      <p className="text-xs mb-3 flex items-center gap-1.5" style={{ fontFamily: BODY_FONT, color: "rgba(63,74,28,0.55)" }}>
+                        <Loader2 className="w-3 h-3 animate-spin" /> Looking up address…
+                      </p>
+                    ) : readableAddress ? (
+                      <p className="text-sm font-medium mb-3" style={{ fontFamily: BODY_FONT, color: COLORS.canopy }}>
+                        {readableAddress}
+                      </p>
+                    ) : null}
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-[10px] uppercase mb-1" style={{ fontFamily: DISPLAY_FONT, color: "rgba(63,74,28,0.6)" }}>Latitude</p>

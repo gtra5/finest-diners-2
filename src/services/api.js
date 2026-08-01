@@ -60,9 +60,39 @@ export const getOrder = async (orderId) => {
   return data;
 };
 
-// Location API function - IP-based geolocation
-export const getLocationByIP = async () => {
-  const { data } = await api.get('/location');
+// Get the customer's exact GPS coordinates from the browser.
+// Wraps the callback-based Geolocation API in a promise so it can be awaited
+// like the rest of this file.
+export const getBrowserLocation = () => {
+  return new Promise((resolve, reject) => {
+    if (!('geolocation' in navigator)) {
+      reject(new Error('Geolocation is not supported by this browser.'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        });
+      },
+      (error) => reject(error),
+      {
+        enableHighAccuracy: true, // use GPS, not just wifi/cell towers
+        timeout: 10000,
+        maximumAge: 0, // don't reuse a cached position
+      }
+    );
+  });
+};
+
+// Reverse-geocode GPS coordinates into a readable address via our backend
+// (backend calls OpenCage — see locationController.js)
+export const getAddressFromCoords = async (latitude, longitude) => {
+  const { data } = await api.get('/location/reverse', {
+    params: { lat: latitude, lng: longitude },
+  });
   return data;
 };
 
