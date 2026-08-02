@@ -99,7 +99,7 @@ export default function BurgerFuelHero() {
       <div className="bg-[#6B7C2F] font-sans overflow-x-hidden">
         <section
           className="relative flex flex-col justify-center overflow-hidden pt-[max(30px,4vh)] md:pt-[max(68px,8vh)]"
-          style={{ minHeight: "100vh" }}
+          style={{ minHeight: isMobile ? "auto" : "100vh" }}
         >
           {/* ── MOBILE ── */}
           {isMobile && <MobileBurgerHero containerRef={containerRef} />}
@@ -176,13 +176,14 @@ export default function BurgerFuelHero() {
           )}
 
           {/* Bottom row */}
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-6 gap-6 sm:gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between px-4 sm:px-6 md:px-10 py-2 sm:py-6 gap-4 sm:gap-8">
             <div className="flex flex-col shrink-0">
               <h1
-                className="text-[#111] leading-none text-4xl md:text-[clamp(20px,5vw,56px)]"
+                className="text-[#111] leading-none text-3xl sm:text-4xl md:text-[clamp(20px,5vw,56px)]"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   lineHeight: "1",
+                  marginBottom: "clamp(8px, 2vw, 12px)",
                 }}
               >
                 Burgers Packed{" "}
@@ -201,10 +202,11 @@ export default function BurgerFuelHero() {
               </h1>
               <p
                 style={{
-                  fontSize: 15,
+                  fontSize: "clamp(13px, 1.8vw, 15px)",
                   color: BG,
                   opacity: 0.68,
-                  lineHeight: 1.75,
+                  lineHeight: 1.6,
+                  marginBottom: "clamp(12px, 3vw, 20px)",
                 }}
                 className="max-w-xl md:max-w-lg"
               >
@@ -212,49 +214,88 @@ export default function BurgerFuelHero() {
                 the same obsessive treatment whether it costs $10 or $25, it
                 ships out like it matters.
               </p>
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                style={{
-                  marginTop: "clamp(18px, 3.5vw, 30px)",
-                  width: "280px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "clamp(8px, 1.5vw, 14px)",
-                  background: "#fff",
-                  color: "#000",
-                  border: "2px solid #4e6020",
-                  borderRadius: 999,
-                  padding: "10px 14px 10px clamp(16px, 2.5vw, 22px)",
-                  fontSize: "clamp(0.82rem, 1.8vw, 1.15rem)",
-                  fontFamily: UI_FONT,
-                  fontWeight: 600,
-                  letterSpacing: "0.02em",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  boxShadow: "0 6px 28px rgba(107,124,47,0.28)",
-                }}
-              >
-                <span className="hidden sm:inline">
-                  Learn more about our food
-                </span>
-                <span className="sm:hidden">Learn more </span>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "#000",
-                    borderRadius: "50%",
-                    width: "clamp(28px, 4vw, 36px)",
-                    height: "clamp(28px, 4vw, 36px)",
-                    flexShrink: 0,
-                  }}
-                >
-                  <MoveRight size={15} color="#fff" strokeWidth={2.2} />
-                </span>
-              </motion.button>
-            </div>
+              {/* Desktop button */}
+<motion.button
+  className="hidden sm:inline-flex"
+  whileHover={{ scale: 1.04 }}
+  whileTap={{ scale: 0.96 }}
+  style={{
+    marginTop: "clamp(12px, 2.5vw, 20px)",
+    width: "clamp(240px, 80vw, 280px)",
+    alignItems: "center",
+    gap: "clamp(8px, 1.5vw, 14px)",
+    background: "#fff",
+    color: "#000",
+    border: "2px solid #4e6020",
+    borderRadius: 999,
+    padding: "10px 12px 10px clamp(14px, 2.5vw, 22px)",
+    fontSize: "clamp(0.75rem, 1.8vw, 1.15rem)",
+    fontFamily: UI_FONT,
+    fontWeight: 600,
+    letterSpacing: "0.02em",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    boxShadow: "0 6px 28px rgba(107,124,47,0.28)",
+  }}
+>
+  Learn more about our food
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#000",
+      borderRadius: "50%",
+      width: "clamp(28px, 4vw, 36px)",
+      height: "clamp(28px, 4vw, 36px)",
+      flexShrink: 0,
+    }}
+  >
+    <MoveRight size={15} color="#fff" strokeWidth={2.2} />
+  </span>
+</motion.button>
+
+{/* Mobile button */}
+<motion.button
+  className="sm:hidden inline-flex"
+  whileHover={{ scale: 1.04 }}
+  whileTap={{ scale: 0.96 }}
+  style={{
+    marginTop: "12px",
+    width: "150px",              // ← custom mobile-only width
+    alignItems: "center",
+    gap: "8px",
+    background: "#fff",
+    color: "#000",
+    border: "2px solid #4e6020",
+    borderRadius: 999,
+    padding: "10px 14px",
+    fontSize: "0.85rem",
+    fontFamily: UI_FONT,
+    fontWeight: 600,
+    letterSpacing: "0.02em",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    boxShadow: "0 6px 28px rgba(107,124,47,0.28)",
+  }}
+>
+  Learn more
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#000",
+      borderRadius: "50%",
+      width: "28px",
+      height: "28px",
+      flexShrink: 0,
+    }}
+  >
+    <MoveRight size={14} color="#fff" strokeWidth={2.2} />
+  </span>
+</motion.button>
+</div>
 
             {/* Trending cards */}
             {!Loading && Trending.length > 0 && (

@@ -164,12 +164,12 @@ export default function About() {
 
   return (
     <div
-      className="min-h-screen text-white w-full max-w-screen-xl mx-auto"
+      className="min-h-screen text-white w-full"
       style={{ background: DARK, fontFamily: "'Inter', sans-serif" }}
     >
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section
-        className="relative px-6 lg:px-12 pt-16 pb-0 overflow-hidden"
+        className="relative overflow-hidden"
         style={{ background: OLIVE, minHeight: 680 }}
       >
         {/* Background texture */}
@@ -180,6 +180,7 @@ export default function About() {
           style={{ mixBlendMode: "multiply" }}
         />
 
+        <div className="max-w-screen-xl mx-auto px-6 lg:px-12 pt-16 pb-0">
         {/* Top row */}
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
           <div>
@@ -268,6 +269,7 @@ export default function About() {
             </motion.div>
           ))}
         </div>
+        </div>
 
         {/* Jelly wave into dark */}
         <svg
@@ -329,9 +331,10 @@ export default function About() {
 
       {/* ── TEAM ─────────────────────────────────────────────── */}
       <section
-        className="px-6 lg:px-12 py-16 border-b"
+        className="border-b"
         style={{ borderColor: BORDER }}
       >
+        <div className="max-w-screen-xl mx-auto px-6 lg:px-12 py-16">
         <div className="flex justify-between items-baseline mb-12">
           <h2
             className="font-black text-xs tracking-[0.3em] uppercase"
@@ -382,13 +385,15 @@ export default function About() {
             );
           })}
         </div>
+        </div>
       </section>
 
       {/* ── OUR PILLARS ──────────────────────────────────────── */}
       <section
-        className="px-8 py-8 bg-white"
+        className="bg-white"
         style={{ borderColor: BORDER, backgroundImage: `url(${HeroBg})` }}
       >
+        <div className="max-w-screen-xl mx-auto px-8 py-8">
         <div
           style={{
             fontSize: "clamp(28px, 6vw, 100px)",
@@ -415,6 +420,7 @@ export default function About() {
 
         <div className="mt-10">
           {isMobileOrTablet ? <MobileCarousel /> : <DesktopCarousel />}
+        </div>
         </div>
       </section>
 

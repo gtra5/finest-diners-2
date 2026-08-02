@@ -69,20 +69,22 @@ export default function MyOrders() {
   }
 
   return (
-    <div className="min-h-screen text-white w-full max-w-screen-xl mx-auto">
+    <div className="min-h-screen text-white w-full">
 
       {/* ── PAGE HEADER ── */}
-      <section className="px-4 sm:px-6 lg:px-8 pt-10 pb-6 border-b border-neutral-800">
-        <p className="section-label mb-2">ACCOUNT</p>
-        <h1 className="hero-title text-3xl sm:text-4xl font-black tracking-tight">MY ORDERS</h1>
-        <p className="text-neutral-600 text-xs font-mono mt-2">
-          {orders.length} ORDER{orders.length !== 1 ? 'S' : ''} IN YOUR HISTORY
-        </p>
+      <section className="w-full border-b border-neutral-800">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
+          <p className="section-label mb-2">ACCOUNT</p>
+          <h1 className="hero-title text-3xl sm:text-4xl font-black tracking-tight">MY ORDERS</h1>
+          <p className="text-neutral-600 text-xs font-mono mt-2">
+            {orders.length} ORDER{orders.length !== 1 ? 'S' : ''} IN YOUR HISTORY
+          </p>
+        </div>
       </section>
 
       {/* ── EMPTY STATE ── */}
       {orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-5 py-28 px-6">
+        <div className="max-w-screen-xl mx-auto flex flex-col items-center justify-center gap-5 py-28 px-6">
           <span className="text-5xl">🛵</span>
           <p className="section-label text-neutral-600">NO ORDERS YET</p>
           <p className="text-neutral-500 text-sm font-mono text-center max-w-sm">
@@ -91,7 +93,8 @@ export default function MyOrders() {
           <Link to={`/menu/${RESTAURANT_ID}`} className="btn-primary">BROWSE MENU</Link>
         </div>
       ) : (
-        <section className="px-4 sm:px-6 lg:px-8 py-8 space-y-3">
+        <section className="w-full">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-3">
           {orders.map((order) => {
             const s = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
             const activeStatuses = ['pending', 'confirmed', 'preparing', 'out_for_delivery'];
@@ -165,6 +168,7 @@ export default function MyOrders() {
               </div>
             );
           })}
+        </div>
         </section>
       )}
 

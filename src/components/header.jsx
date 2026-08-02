@@ -57,7 +57,7 @@ export default function Header() {
       {/* Fixed to the viewport so it floats over whatever page content sits
           beneath it (the hero video on Home, plain content elsewhere). */}
       <div className="fixed top-0 inset-x-0 z-50">
-        <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <header className="w-full flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5">
             {/* ── Logo ── */}
             <Link to="/">
@@ -65,17 +65,28 @@ export default function Header() {
                 initial={{ x: -40, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.7 }}
-                className="text-white text-2xl sm:text-3xl lg:text-4xl font-black italic tracking-tight"
-                style={{ fontFamily: '"DM Serif Display", serif' }}
+                className="text-2xl sm:text-3xl lg:text-4xl tracking-tight"
+                style={{
+                  fontFamily: '"Lobster", cursive',
+                  color: "#6B7C2F",
+                  WebkitTextStroke: "1.5px white",
+                  textShadow: `
+        -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff,
+        1px 1px 0 #4A5720,
+        2px 2px 0 #4A5720,
+        3px 3px 0 #4A5720,
+        4px 4px 6px rgba(0,0,0,0.35)
+      `,
+                }}
               >
                 Finest Diners
               </motion.div>
             </Link>
 
-            {/* ── Toggle pill (Menu / Close) ── */}
+            {/* ── Toggle pill (Menu / Close) — icon only on mobile, icon + label from sm up ── */}
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex items-center gap-2 rounded-full px-5 py-2.5 border transition-colors"
+              className="flex items-center gap-2 rounded-full px-3 py-2.5 sm:px-5 border transition-colors"
               style={{
                 background: menuOpen ? "transparent" : "#F5F0E6",
                 borderColor: menuOpen ? "rgba(255,255,255,0.5)" : "transparent",
@@ -84,7 +95,7 @@ export default function Header() {
               aria-label="Toggle menu"
             >
               <span
-                className="text-sm font-bold tracking-wide"
+                className="hidden sm:inline text-sm font-bold tracking-wide"
                 style={{ fontFamily: "'Baloo 2', sans-serif" }}
               >
                 {menuOpen ? "CLOSE" : "MENU"}
@@ -128,7 +139,8 @@ export default function Header() {
                       style={{
                         fontFamily: "'Baloo 2', sans-serif",
                         fontWeight: 700,
-                        color: index === 0 ? "#F5F0E6" : "rgba(245,240,230,0.85)",
+                        color:
+                          index === 0 ? "#F5F0E6" : "rgba(245,240,230,0.85)",
                       }}
                     >
                       {item.label}
@@ -165,7 +177,10 @@ export default function Header() {
                       <button
                         onClick={handleLogout}
                         className="rounded-full py-2 px-6 text-sm font-semibold border transition-colors hover:bg-white/10 w-fit"
-                        style={{ borderColor: "rgba(245,240,230,0.3)", color: "#F5F0E6" }}
+                        style={{
+                          borderColor: "rgba(245,240,230,0.3)",
+                          color: "#F5F0E6",
+                        }}
                       >
                         Logout
                       </button>
@@ -176,7 +191,10 @@ export default function Header() {
                         to="/login"
                         onClick={() => setMenuOpen(false)}
                         className="text-center rounded-full py-2.5 px-6 text-sm font-semibold border transition-colors hover:bg-white/10"
-                        style={{ borderColor: "rgba(245,240,230,0.3)", color: "#F5F0E6" }}
+                        style={{
+                          borderColor: "rgba(245,240,230,0.3)",
+                          color: "#F5F0E6",
+                        }}
                       >
                         Login
                       </Link>

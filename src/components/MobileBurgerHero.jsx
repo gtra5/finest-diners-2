@@ -3,34 +3,28 @@ import img1 from "../assets/image.png";
 
 const UI_FONT = "'Bebas Neue', Impact, 'Arial Black', sans-serif";
 
-export default function MobileBurgerHero({ containerRef }) {
-  const [dimensions, setDimensions] = useState({ vw: 390, vh: 250 });
+export default function MobileBurgerHero({ containerRef, height = 200 }) {
+  const [vw, setVw] = useState(390);
 
   useEffect(() => {
-    const updateDimensions = () => {
+    const updateWidth = () => {
       if (!containerRef?.current) return;
-
-      const containerWidth = containerRef.current.offsetWidth;
-      const containerHeight = Math.max(300, containerWidth * 0.27);
-
-      setDimensions({
-        vw: containerWidth,
-        vh: containerHeight,
-      });
+      setVw(containerRef.current.offsetWidth);
     };
 
-    updateDimensions();
+    updateWidth();
 
-    const resizeObserver = new ResizeObserver(updateDimensions);
+    const resizeObserver = new ResizeObserver(updateWidth);
     if (containerRef?.current) resizeObserver.observe(containerRef.current);
     return () => resizeObserver.disconnect();
   }, [containerRef]);
 
- const FONT_SIZE = Math.max(180, dimensions.vw * 0.3);
+  const vh = height; // ← independent height control
+  const FONT_SIZE = Math.max(180, vw * 0.3);
   const LINE_HEIGHT = FONT_SIZE * 1.0;
 
   const getTextProps = (lineIndex) => ({
-    x: dimensions.vw / 2,
+    x: vw / 2,
     y: FONT_SIZE * 0.82 + lineIndex * LINE_HEIGHT,
     textAnchor: "middle",
     style: {
@@ -46,12 +40,12 @@ export default function MobileBurgerHero({ containerRef }) {
         style={{
           position: "relative",
           width: "100%",
-          aspectRatio: "1 / 0.55",
+          height: vh, // ← explicit height, no aspectRatio
           overflow: "hidden",
         }}
       >
         <svg
-          viewBox={`0 0 ${dimensions.vw} ${dimensions.vh}`}
+          viewBox={`0 0 ${vw} ${vh}`}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
           style={{
@@ -60,28 +54,25 @@ export default function MobileBurgerHero({ containerRef }) {
             width: "100%",
             height: "100%",
           }}
-          preserveAspectRatio="xMidYMid meet"
+          preserveAspectRatio="xMidYMid slice" // ← slice fills the box without distortion
         >
           <defs>
             <clipPath id="letterClipMobile">
-              <text {...getTextProps(0)}>OUR  FOOD</text>
+              <text {...getTextProps(0)}>OUR FOOD</text>
             </clipPath>
           </defs>
 
-          {/* Background */}
-          <rect width={dimensions.vw} height={dimensions.vh} fill="#6B7C2F" />
+          <rect width={vw} height={vh} fill="#6B7C2F" />
 
-          {/* Dark shadow text rendered behind the image clip */}
           <text {...getTextProps(0)} fill="#111">OUR FOOD</text>
 
-          {/* Image clipped to letter shapes, sits on top of shadow text */}
           <g clipPath="url(#letterClipMobile)">
             <image
               href={img1}
               x={0}
               y={0}
-              width={dimensions.vw}
-              height={dimensions.vh}
+              width={vw}
+              height={vh}
               preserveAspectRatio="xMidYMid slice"
             />
           </g>
