@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import img1 from "../assets/image.png";
+import img1 from "../assets/delicious-burger-with-fresh-ingredients.jpg";
 
 const UI_FONT = "'Bebas Neue', Impact, 'Arial Black', sans-serif";
+const LINES = ["OUR", "BURGERS"];
 
-export default function MobileBurgerHero({ containerRef, height = 200 }) {
+export default function MobileBurgerHero({ containerRef, height = 230 }) {
   const [vw, setVw] = useState(390);
 
   useEffect(() => {
@@ -20,22 +21,22 @@ export default function MobileBurgerHero({ containerRef, height = 200 }) {
   }, [containerRef]);
 
   const vh = height; // ← independent height control
-  const FONT_SIZE = Math.max(110, vw * 0.3);
-  const LINE_HEIGHT = FONT_SIZE * 1.0;
 
-  // SVG <text> never wraps on its own — the old fixed 180px floor made the
-  // font bigger than most phone screens can hold, so the word just ran off
-  // both edges instead of "wrapping." This forces the whole word's total
-  // advance width to fit inside the box, compressing spacing/glyphs only
-  // as much as needed, so it's always fully visible on one line.
-  const FIT_WIDTH = vw * 0.92;
+  // The word wraps onto two lines ("OUR" / "FOOD") like the desktop strip
+  // wraps when space runs out. Each line is its own <text> element (SVG
+  // <text> never wraps on its own). The block is anchored to the left edge,
+  // and the font is sized so both lines fill the banner height — bigger
+  // letters plus letter-spacing make the food inside them stretch wider.
+  const FONT_SIZE = Math.min(Math.max(100, vw * 0.34), vh * 0.5);
+  const LINE_HEIGHT = FONT_SIZE * 0.96;
+  const TOP_OFFSET = (vh - (LINE_HEIGHT + FONT_SIZE)) / 2;
+  const LEFT_OFFSET = vw * 0.06;
 
   const getTextProps = (lineIndex) => ({
-    x: vw / 2,
-    y: FONT_SIZE * 0.82 + lineIndex * LINE_HEIGHT,
-    textAnchor: "middle",
-    textLength: FIT_WIDTH,
-    lengthAdjust: "spacingAndGlyphs",
+    x: LEFT_OFFSET,
+    y: TOP_OFFSET + FONT_SIZE * 0.72 + lineIndex * LINE_HEIGHT,
+    textAnchor: "start",
+    letterSpacing: "0.06em",
     style: {
       fontFamily: UI_FONT,
       fontSize: FONT_SIZE,
@@ -67,13 +68,21 @@ export default function MobileBurgerHero({ containerRef, height = 200 }) {
         >
           <defs>
             <clipPath id="letterClipMobile">
-              <text {...getTextProps(0)}>OUR FOOD</text>
+              {LINES.map((line, i) => (
+                <text key={i} {...getTextProps(i)}>
+                  {line}
+                </text>
+              ))}
             </clipPath>
           </defs>
 
           <rect width={vw} height={vh} fill="#6B7C2F" />
 
-          <text {...getTextProps(0)} fill="#111">OUR FOOD</text>
+          {LINES.map((line, i) => (
+            <text key={i} {...getTextProps(i)} fill="#111">
+              {line}
+            </text>
+          ))}
 
           <g clipPath="url(#letterClipMobile)">
             <image

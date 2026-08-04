@@ -5,6 +5,7 @@ import { ShoppingCart } from 'lucide-react';
 import { AuthProvider  } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
 import Login from './pages/Login';
@@ -72,6 +73,7 @@ const CartButton = () => {
 
 const AppLayout = () => (
   <div className="min-h-screen bg-[#030505]">
+    <ScrollToTop />
     <Header />
     <Routes>
       <Route path="/"                   element={<Home />} />

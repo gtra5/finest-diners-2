@@ -179,7 +179,7 @@ export default function Checkout() {
   // ── Success state ──
   if (orderPlaced) {
     return (
-      <div className="min-h-screen text-white flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-10" style={{ background: DARK }}>
+      <div className="min-h-screen text-white flex items-center justify-center px-6 sm:px-12 lg:px-16 pt-20 sm:pt-24 pb-8 sm:pb-10" style={{ background: DARK }}>
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -224,7 +224,7 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen text-white px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-10" style={{ background: DARK }}>
+    <div className="min-h-screen text-white px-6 sm:px-12 lg:px-16 pt-20 sm:pt-24 pb-8 sm:pb-10" style={{ background: DARK }}>
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-6 sm:mb-8">
           <motion.p

@@ -83,7 +83,7 @@ export default function MyOrders() {
   }
 
   return (
-    <div className="min-h-screen text-white w-full px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-10" style={{ background: DARK }}>
+    <div className="min-h-screen text-white w-full px-6 sm:px-12 lg:px-16 pt-20 sm:pt-24 pb-8 sm:pb-10" style={{ background: DARK }}>
 
       {/* ── PAGE HEADER ── */}
       <section className="max-w-screen-xl mx-auto mb-6 sm:mb-8">

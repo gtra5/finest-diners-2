@@ -50,7 +50,7 @@ const Menu = () => {
   return (
     <div className="min-h-screen text-white w-full">
       {/* ── PAGE HEADER ── */}
-      <section className="w-full px-4 sm:px-6 lg:px-8 pt-12 pb-8 bg-[#556B2F] min-h-screen relative flex flex-col justify-center items-center text-center gap-2">
+      <section className="w-full px-6 sm:px-12 lg:px-16 pt-12 pb-8 bg-[#556B2F] min-h-screen relative flex flex-col justify-center items-center text-center gap-2">
         {restaurant?.name && (
           <h1 className="hero-title font-semibold tracking-widest text-2xl sm:text-4xl">
             {restaurant.name}
@@ -77,7 +77,7 @@ const Menu = () => {
      {/* ── CATEGORY FILTER ── */}
 {categories.length > 1 && (
   <section className="w-full border-b border-neutral-800">
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+    <div className="max-w-screen-xl mx-auto px-6 sm:px-12 lg:px-16 py-5">
       <div className="flex gap-2 flex-wrap">
         {categories.map((cat) => {
           const isActive = activeCategory === cat;
@@ -102,7 +102,7 @@ const Menu = () => {
 
       {/* ── FOOD GRID ── */}
       <section className="w-full relative">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 pb-16 sm:pb-20">
+        <div className="max-w-screen-xl mx-auto px-6 sm:px-12 lg:px-16 py-8 sm:py-10 pb-16 sm:pb-20">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
             <h2 className="hero-title font-semibold tracking-widest text-xs sm:text-sm">
               {activeCategory === "All"

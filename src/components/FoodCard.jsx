@@ -1,4 +1,6 @@
 import { useCart } from "../context/CartContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Plus } from "lucide-react";
 
 const StarRating = ({ rating = 0, max = 5 }) => (
   <div className="flex items-center gap-0.5">
@@ -17,10 +19,20 @@ const StarRating = ({ rating = 0, max = 5 }) => (
 );
 
 const FoodCard = ({ food, restaurantId }) => {
-  const { addItem } = useCart();
+  const { addItem, cartItems } = useCart();
+  const isInCart = cartItems.some(item => item.spoonacularId === food.spoonacularId);
+
+  const handleAddToCart = () => {
+    if (!isInCart) {
+      addItem(food, restaurantId);
+    }
+  };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       className="border card-hover border border-neutral-800 overflow-hidden border-neutral-800 overflow-hidden transition-all duration-200 hover:border-neutral-600"
       style={{ background: "#131313", fontFamily: "'Courier New', monospace" }}
     >
@@ -44,6 +56,20 @@ const FoodCard = ({ food, restaurantId }) => {
             {food.tag}
           </span>
         )}
+        <AnimatePresence>
+          {isInCart && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className="absolute top-2 right-2 bg-lime-400 text-black px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
+            >
+              <Check className="w-3 h-3" />
+              ADDED
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Body */}
@@ -84,21 +110,45 @@ const FoodCard = ({ food, restaurantId }) => {
 
         {/* Button */}
         {food.isAvailable ? (
-          <button
-            onClick={() => addItem(food, restaurantId)}
-            className="w-full border border-neutral-700 text-xs tracking-widest py-2.5 transition-colors hover:text-lime-400 text-neutral-400"
-            style={{ ":hover": { borderColor: "#c8f135" } }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#c8f135";
-              e.currentTarget.style.color = "#c8f135";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "";
-              e.currentTarget.style.color = "";
+          <motion.button
+            onClick={handleAddToCart}
+            disabled={isInCart}
+            whileHover={!isInCart ? { scale: 1.02 } : {}}
+            whileTap={!isInCart ? { scale: 0.98 } : {}}
+            className="w-full border border-neutral-700 text-xs tracking-widest py-2.5 transition-colors text-neutral-400 relative overflow-hidden"
+            style={{ 
+              borderColor: isInCart ? "#c8f135" : "",
+              color: isInCart ? "#c8f135" : ""
             }}
           >
-            ADD TO CART
-          </button>
+            <AnimatePresence mode="wait">
+              {isInCart ? (
+                <motion.span
+                  key="added"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  IN CART
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="add"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  ADD TO CART
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
         ) : (
           <button
             disabled
@@ -108,7 +158,7 @@ const FoodCard = ({ food, restaurantId }) => {
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
