@@ -14,7 +14,7 @@ import cabbageImg from "../assets/cabbage.png";
 const OLIVE = "#6B7C2F";
 const OLIVE_DIM = "#3a4419";
 const OLIVE_LIGHT = "#D4E2B9";
-const BG = "#050A0A";
+const BG = "#030505";
 
 const Advertisment = [
   { id: 1, image: img1, label: "ADVERTISMENT 1" },

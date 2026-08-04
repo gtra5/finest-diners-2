@@ -6,7 +6,15 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import HeroVideo from "../../public/Food_boxes_animate_and_close_202607111921.mp4";
+
+// Dynamically import all food frame images
+const frameModules = import.meta.glob('../assets/foodframes/ezgif-frame-*.jpg', { eager: true });
+
+const frames = Array.from({ length: 50 }, (_, i) => {
+  const frameNumber = String(i + 1).padStart(3, '0');
+  const path = `../assets/foodframes/ezgif-frame-${frameNumber}.jpg`;
+  return frameModules[path].default;
+});
 
 // How much extra scroll distance (in viewport heights) the hero "eats up"
 // while it stays pinned and the video scrubs. Bigger = slower/longer scrub.
@@ -68,8 +76,7 @@ function MagneticButton({
 
 export default function CravHero() {
   const sectionRef = useRef(null);
-  const videoRef = useRef(null);
-  const [duration, setDuration] = useState(0);
+  const [currentFrame, setCurrentFrame] = useState(0);
 
   // scrollYProgress goes 0 -> 1 as the window scrolls the section's top
   // from the top of the viewport to the section's bottom hitting the
@@ -79,23 +86,6 @@ export default function CravHero() {
     offset: ["start start", "end end"],
   });
 
-  // Grab the real duration once the video's metadata has loaded, and make
-  // sure it isn't trying to play on its own — scroll is driving it now.
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.pause();
-
-    const handleLoadedMetadata = () => setDuration(video.duration || 0);
-    if (video.readyState >= 1) {
-      handleLoadedMetadata();
-    }
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    return () =>
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-  }, []);
-
   // Track the latest desired progress cheaply (no seeking here) — this
   // can fire many times per scroll frame and just updates a ref.
   const targetProgress = useRef(0);
@@ -103,30 +93,19 @@ export default function CravHero() {
     targetProgress.current = latest;
   });
 
-  // Actually drive the video in its own rAF loop, decoupled from scroll
-  // event frequency. Crucially: only issue a new seek once the previous
-  // one has finished (video.seeking === false). Without this guard, fast
-  // scrolling fires seeks faster than the decoder can keep up, they queue
-  // up, and playback visibly lags behind the scroll position.
+  // Drive the image sequence in its own rAF loop for smooth animation
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !duration) return;
-
     let rafId;
 
     const tick = () => {
-      if (!video.seeking) {
-        const targetTime = targetProgress.current * duration;
-        if (Math.abs(video.currentTime - targetTime) > 0.02) {
-          video.currentTime = targetTime;
-        }
-      }
+      const frameIndex = Math.floor(targetProgress.current * (frames.length - 1));
+      setCurrentFrame(frameIndex);
       rafId = requestAnimationFrame(tick);
     };
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [duration]);
+  }, []);
 
   const scallopedWaveBottom =
     "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 100\"><g transform=\"matrix(1 0 0 -1 0 100)\"><path d=\"M0 0v60c9 0 18-3 25-10 13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s37 13 50 0c14-14 37-14 50 0 7 7 16 10 25 10V0H0Z\" fill=\"%23050A0A\"></path></g></svg>')";
@@ -144,18 +123,14 @@ export default function CravHero() {
         {/* Pinned viewport-height stage — this is what stays on screen
             while the user scrolls through the section above */}
         <div className="sticky top-0 left-0 w-full h-screen overflow-hidden">
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            preload="auto"
+          <img
+            src={frames[currentFrame]}
+            alt="Food animation frame"
             className="absolute top-0 left-0 w-full h-full object-cover z-0"
-          >
-            <source src={HeroVideo} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+            style={{ imageRendering: 'auto' }}
+          />
 
-          {/* Soft scrim so the finer serif type stays legible over the video */}
+          {/* Soft scrim so the finer serif type stays legible over the images */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/25 z-[5] pointer-events-none" />
 
         

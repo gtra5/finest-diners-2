@@ -20,13 +20,22 @@ export default function MobileBurgerHero({ containerRef, height = 200 }) {
   }, [containerRef]);
 
   const vh = height; // ← independent height control
-  const FONT_SIZE = Math.max(180, vw * 0.3);
+  const FONT_SIZE = Math.max(110, vw * 0.3);
   const LINE_HEIGHT = FONT_SIZE * 1.0;
+
+  // SVG <text> never wraps on its own — the old fixed 180px floor made the
+  // font bigger than most phone screens can hold, so the word just ran off
+  // both edges instead of "wrapping." This forces the whole word's total
+  // advance width to fit inside the box, compressing spacing/glyphs only
+  // as much as needed, so it's always fully visible on one line.
+  const FIT_WIDTH = vw * 0.92;
 
   const getTextProps = (lineIndex) => ({
     x: vw / 2,
     y: FONT_SIZE * 0.82 + lineIndex * LINE_HEIGHT,
     textAnchor: "middle",
+    textLength: FIT_WIDTH,
+    lengthAdjust: "spacingAndGlyphs",
     style: {
       fontFamily: UI_FONT,
       fontSize: FONT_SIZE,

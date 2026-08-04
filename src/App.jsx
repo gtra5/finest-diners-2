@@ -71,7 +71,7 @@ const CartButton = () => {
 };
 
 const AppLayout = () => (
-  <div className="min-h-screen bg-[#050A0A]">
+  <div className="min-h-screen bg-[#030505]">
     <Header />
     <Routes>
       <Route path="/"                   element={<Home />} />

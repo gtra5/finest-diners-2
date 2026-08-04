@@ -57,25 +57,33 @@ export default function Header() {
       {/* Fixed to the viewport so it floats over whatever page content sits
           beneath it (the hero video on Home, plain content elsewhere). */}
       <div className="fixed top-0 inset-x-0 z-50">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <header className="w-full flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5">
+        <div className="max-w-screen-xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-5">
+          <header className="w-full flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4">
             {/* ── Logo ── */}
             <Link to="/">
               <motion.div
                 initial={{ x: -40, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.94 }}
                 transition={{ delay: 0.3, duration: 0.7 }}
-                className="text-2xl sm:text-3xl lg:text-4xl tracking-tight"
+                className="text-3xl sm:text-3xl lg:text-4xl uppercase leading-none select-none"
                 style={{
-                  fontFamily: '"Lobster", cursive',
-                  color: "#6B7C2F",
-                  WebkitTextStroke: "1.5px white",
+                  fontFamily: "'Baloo 2', sans-serif",
+                  fontWeight: 800,
+                  letterSpacing: "-0.01em",
+                  color: "#556B2F",
+                  // Cream stroke ties the logo to the same #F5F0E6 used across the
+                  // toggle pill / nav panel, instead of a plain white outline.
+                  // clamp() keeps the ring thin and crisp at mobile sizes and a touch
+                  // bolder at desktop, so it never looks smudgy on a small screen.
+                  WebkitTextStroke: "clamp(1.25px, 0.3vw, 2px) #F5F0E6",
                   textShadow: `
-        -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff,
-        1px 1px 0 #4A5720,
+        -2px -2px 0 #F5F0E6, 2px -2px 0 #F5F0E6, -2px 2px 0 #F5F0E6, 2px 2px 0 #F5F0E6,
+         1px 1px 0 #4A5720,
         2px 2px 0 #4A5720,
         3px 3px 0 #4A5720,
-        4px 4px 6px rgba(0,0,0,0.35)
+        4px 5px 8px rgba(0,0,0,0.3)
       `,
                 }}
               >
