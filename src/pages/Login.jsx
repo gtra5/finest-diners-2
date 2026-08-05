@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 
 const OLIVE = "#6B7C2F";
 const OLIVE_DIM = "#3a4419";
@@ -14,6 +15,7 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -125,18 +127,28 @@ const Login = () => {
                 <label className="text-[9px] tracking-[0.25em] font-semibold mb-2 block uppercase" style={{ color: OLIVE_LIGHT }}>
                   PASSWORD
                 </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  placeholder="••••••••"
-                  className="w-full bg-neutral-900 border text-white text-sm font-mono px-4 py-3 focus:outline-none transition-colors placeholder-neutral-600"
-                  style={{ borderColor: BORDER }}
-                  onFocus={(e) => e.target.style.borderColor = OLIVE}
-                  onBlur={(e) => e.target.style.borderColor = BORDER}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="••••••••"
+                    className="w-full bg-neutral-900 border text-white text-sm font-mono px-4 py-3 pr-12 focus:outline-none transition-colors placeholder-neutral-600"
+                    style={{ borderColor: BORDER }}
+                    onFocus={(e) => e.target.style.borderColor = OLIVE}
+                    onBlur={(e) => e.target.style.borderColor = BORDER}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </motion.div>
 
               <motion.button

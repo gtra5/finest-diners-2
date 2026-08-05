@@ -96,19 +96,26 @@ export default function BurgerFuelHero() {
         }
       `}</style>
 
-      <div className="bg-[#6B7C2F] font-sans overflow-x-hidden">
+      <div
+        data-navbar="#6B7C2F"
+        className="bg-[#6B7C2F] font-sans overflow-x-hidden"
+      >
         <section
           className="relative flex flex-col justify-center overflow-hidden pt-[max(30px,4vh)] md:pt-[max(68px,8vh)]"
           style={{ minHeight: isMobile ? "auto" : "100vh" }}
         >
           {/* ── MOBILE ── */}
-          {isMobile && <MobileBurgerHero containerRef={containerRef} />}
+          {isMobile && (
+            <div className="w-full px-6 sm:px-12 lg:px-16">
+              <MobileBurgerHero containerRef={containerRef} />
+            </div>
+          )}
 
           {/* ── DESKTOP: Animated Scrolling Strip ── */}
           {!isMobile && (
             <div
               ref={containerRef}
-              className="relative w-full px-3 sm:px-4 md:px-6"
+              className="relative w-full px-6 sm:px-12 lg:px-16"
             >
               <svg
                 viewBox={`0 0 ${dimensions.vw} ${dimensions.vh}`}
@@ -176,7 +183,7 @@ export default function BurgerFuelHero() {
           )}
 
           {/* Bottom row */}
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between px-4 sm:px-6 md:px-10 py-2 sm:py-6 gap-4 sm:gap-8">
+          <div className="mx-auto w-full max-w-screen-xl flex flex-col lg:flex-row lg:items-end lg:justify-between px-6 sm:px-12 lg:px-16 py-2 sm:py-6 gap-4 sm:gap-8">
             <div className="flex flex-col shrink-0">
               <h1
                 className="text-[#111] leading-none text-3xl sm:text-4xl md:text-[clamp(20px,5vw,56px)]"

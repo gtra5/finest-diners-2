@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useScroll, useMotionValueEvent } from "framer-motion";
 import api from "../services/api";
 import FoodCard from "../components/FoodCard";
 import CustomerReview from "../components/customerReview";
@@ -11,6 +12,37 @@ const Menu = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const heroRef = useRef(null);
+  const videoRef = useRef(null);
+  const progressRef = useRef(0);
+
+  // Scroll-scrub the hero video: progress goes 0 -> 1 as the page scrolls
+  // through the tall section, and the video frame follows it.
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end end"],
+  });
+
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    progressRef.current = latest;
+  });
+
+  useEffect(() => {
+    const v = videoRef.current;
+    let rafId;
+    const tick = () => {
+      rafId = requestAnimationFrame(tick);
+      if (v && v.readyState >= 1 && v.duration) {
+        const target = progressRef.current * v.duration;
+        if (Math.abs(v.currentTime - target) > 0.03) {
+          v.currentTime = target;
+        }
+      }
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
  
 
   const scallopedWaveFlipped =
@@ -49,29 +81,51 @@ const Menu = () => {
 
   return (
     <div className="min-h-screen text-white w-full">
-      {/* ── PAGE HEADER ── */}
-      <section className="w-full px-6 sm:px-12 lg:px-16 pt-12 pb-8 bg-[#556B2F] min-h-screen relative flex flex-col justify-center items-center text-center gap-2">
-        {restaurant?.name && (
-          <h1 className="hero-title font-semibold tracking-widest text-2xl sm:text-4xl">
-            {restaurant.name}
-          </h1>
-        )}
-        {restaurant?.cuisine && (
-          <p className="section-label text-white/70">
-            {restaurant.cuisine.toUpperCase()}
-          </p>
-        )}
+      {/* ── PAGE HEADER (scroll-scrubbed video hero) ── */}
+      <section
+        ref={heroRef}
+        data-navbar="#transparent"
+        className="relative w-full bg-[#556B2F]"
+        style={{ height: "250vh" }}
+      >
+        <div className="sticky top-0 left-0 w-full h-screen overflow-hidden">
+          <video
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover z-0"
+            src="/menu-hero.mp4"
+            muted
+            loop
+            playsInline
+            preload="auto"
+          />
 
-        <div
-          className="absolute bottom-0 left-0 w-full pointer-events-none"
-          style={{
-            backgroundImage: scallopedWaveFlipped,
-            backgroundRepeat: "repeat-x",
-            backgroundSize: "auto 100%",
-            backgroundPosition: "0 0",
-            height: "100px",
-          }}
-        />
+          {/* Scrim so the restaurant name stays legible over the video */}
+          <div className="absolute inset-0 bg-black/40 z-[5] pointer-events-none" />
+
+          <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center gap-2 px-6 sm:px-12 lg:px-16">
+            {restaurant?.name && (
+              <h1 className="hero-title font-semibold tracking-widest text-2xl sm:text-4xl">
+                {restaurant.name}
+              </h1>
+            )}
+            {restaurant?.cuisine && (
+              <p className="section-label text-white/80">
+                {restaurant.cuisine.toUpperCase()}
+              </p>
+            )}
+          </div>
+
+          <div
+            className="absolute bottom-0 left-0 w-full pointer-events-none z-10"
+            style={{
+              backgroundImage: scallopedWaveFlipped,
+              backgroundRepeat: "repeat-x",
+              backgroundSize: "auto 100%",
+              backgroundPosition: "0 0",
+              height: "100px",
+            }}
+          />
+        </div>
       </section>
 
      {/* ── CATEGORY FILTER ── */}

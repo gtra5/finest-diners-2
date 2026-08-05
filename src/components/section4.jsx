@@ -111,6 +111,7 @@ const STATS = [
 function Section4() {
   return (
     <section
+      data-navbar="#ffffff"
       style={{
         background: "white",
         paddingTop: "clamp(48px, 8vw, 100px)",
@@ -149,10 +150,10 @@ function Section4() {
 
       {/* Copy + stats */}
       <div
+        className="mx-auto w-full max-w-screen-xl px-6 sm:px-12 lg:px-16"
         style={{
-          padding: "0 clamp(24px, 6vw, 96px)",
           position: "relative",
-          zIndex: 1,
+          zIndex: 3,
           marginBottom: "clamp(40px, 6vw, 80px)",
         }}
       >
@@ -283,14 +284,14 @@ function Section4() {
 
       {/* Polaroid photos */}
       <div
+        className="mx-auto w-full max-w-screen-xl px-6 sm:px-12 lg:px-16"
         style={{
           display: "flex",
           flexWrap: "wrap",
           gap: "clamp(12px, 2vw, 20px)",
           justifyContent: "center",
-          padding: "0 clamp(16px, 4vw, 48px)",
           position: "relative",
-          zIndex: 1,
+          zIndex: 3,
         }}
       >
         {Advertisment.map((item, i) => (

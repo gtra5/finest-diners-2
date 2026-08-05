@@ -73,7 +73,7 @@ export default function Home() {
         </div>
 
         {/* ── CATEGORIES ── */}
-        <section className="w-full border-b border-neutral-800 bg-[#030505]">
+        <section data-navbar="#030505" className="w-full border-b border-neutral-800 bg-[#030505]">
           <div className="max-w-screen-xl mx-auto px-6 sm:px-12 lg:px-16 py-8 sm:py-10">
             <div className="flex flex-wrap justify-between items-center gap-2 mb-4 sm:mb-6">
               <h2 className="hero-title font-semibold tracking-widest text-xs sm:text-sm">
@@ -115,7 +115,7 @@ export default function Home() {
         </section>
 
         {/* ── FEATURED SUBSCRIPTIONS ── */}
-        <section className="w-full border-b border-neutral-800 bg-[#030505]">
+        <section data-navbar="#030505" className="w-full border-b border-neutral-800 bg-[#030505]">
           <div className="max-w-screen-xl mx-auto px-6 sm:px-12 lg:px-16 py-8 sm:py-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {[
@@ -179,7 +179,7 @@ export default function Home() {
 
         {/* ── OUR PRODUCTS ── */}
         <section className="w-full">
-          <div className="w-full border-b border-neutral-800 bg-[#030505]">
+          <div data-navbar="#030505" className="w-full border-b border-neutral-800 bg-[#030505]">
             <div className="max-w-screen-xl mx-auto px-6 sm:px-12 lg:px-16 py-8 sm:py-10">
               <div className="flex flex-wrap justify-between items-center gap-2 mb-4 sm:mb-6">
                 <h2 className="hero-title font-semibold tracking-widest text-xs sm:text-sm">
