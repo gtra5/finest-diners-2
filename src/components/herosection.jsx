@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useScroll, useMotionValueEvent } from "framer-motion";
+import heroPoster from "../assets/foodframes/ezgif-frame-001.jpg";
 
 // How much extra scroll distance (in viewport heights) the hero "eats up"
 // while it stays pinned and the video scrubs. Bigger = slower/longer scrub.
@@ -28,20 +29,30 @@ export default function CravHero() {
 
   useEffect(() => {
     const v = videoRef.current;
+    if (!v) return;
+
+    const FPS = 30;
+    const EPS = 0.5 / FPS;
+    let lastSeek = -1;
     let rafId;
+
     const tick = () => {
       rafId = requestAnimationFrame(tick);
-      if (v && v.readyState >= 1 && v.duration) {
-        const target = progressRef.current * v.duration;
-        // Only seek when we're meaningfully off-frame; avoids hammering
-        // the decoder with redundant seeks.
-        if (Math.abs(v.currentTime - target) > 0.03) {
-          v.currentTime = target;
-        }
+      if (v.readyState < 1 || !v.duration) return;
+      // Quantize to whole frames: seek at most once per animation frame
+      // instead of hammering the decoder with redundant micro-seeks.
+      const frameIndex = Math.round(progressRef.current * v.duration * FPS);
+      const seekTo = frameIndex / FPS;
+      if (seekTo !== lastSeek && Math.abs(v.currentTime - seekTo) > EPS) {
+        lastSeek = seekTo;
+        v.currentTime = seekTo;
       }
     };
     rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const scallopedWaveBottom =
@@ -66,10 +77,11 @@ export default function CravHero() {
             ref={videoRef}
             className="absolute top-0 left-0 w-full h-full object-cover z-0"
             src="/hero-food.mp4"
+            poster={heroPoster}
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
           />
 
           {/* Soft scrim so the finer serif type stays legible over the images */}

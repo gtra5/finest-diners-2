@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { useCart, useCartUI } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
@@ -11,7 +11,7 @@ const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
 // Rendered once at the app root. Opens/closes based on CartContext's
 // isCartOpen flag so it can be triggered from anywhere (e.g. the
 // floating cart button) without navigating to a dedicated page.
-const CartPopup = () => {
+const CartPopup = memo(() => {
   const {
     cartItems,
     addItem,
@@ -20,9 +20,8 @@ const CartPopup = () => {
     totalPrice,
     totalItems,
     restaurantId,
-    isCartOpen,
-    closeCart,
   } = useCart();
+  const { isCartOpen, closeCart } = useCartUI();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -123,6 +122,8 @@ const CartPopup = () => {
                       <img
                         src={item.imageUrl || 'https://via.placeholder.com/80'}
                         alt={item.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-14 h-14 object-cover flex-shrink-0 border border-neutral-800"
                       />
 
@@ -212,6 +213,6 @@ const CartPopup = () => {
       )}
     </AnimatePresence>
   );
-};
+});
 
 export default CartPopup;

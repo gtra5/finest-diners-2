@@ -1,6 +1,12 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
-const CartContext = createContext(null);
+// Two separate contexts so cart *data* changes (adding/removing items) and
+// cart *UI* state (drawer open/closed) don't force the same components to
+// re-render. A component that only reads cart items no longer re-renders when
+// the drawer is opened/closed, and vice-versa.
+
+const CartItemsContext = createContext(null);
+const CartUIContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
@@ -11,7 +17,7 @@ export const CartProvider = ({ children }) => {
   const closeCart = useCallback(() => setIsCartOpen(false), []);
   const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
 
-  const addItem = (item, restId) => {
+  const addItem = useCallback((item, restId) => {
     // Prevent mixing items from different restaurants
     if (restaurantId && restaurantId !== restId) {
       const confirmed = window.confirm(
@@ -31,9 +37,9 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...item, quantity: 1 }];
     });
-  };
+  }, [restaurantId]);
 
-  const removeItem = (spoonacularId) => {
+  const removeItem = useCallback((spoonacularId) => {
     setCartItems((prev) => {
       const updated = prev
         .map((i) => (i.spoonacularId === spoonacularId ? { ...i, quantity: i.quantity - 1 } : i))
@@ -41,35 +47,48 @@ export const CartProvider = ({ children }) => {
       if (updated.length === 0) setRestaurantId(null);
       return updated;
     });
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([]);
     setRestaurantId(null);
-  };
+  }, []);
 
-  const totalItems = cartItems.reduce((sum, i) => sum + i.quantity, 0);
-  const totalPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const totalItems = useMemo(
+    () => cartItems.reduce((sum, i) => sum + i.quantity, 0),
+    [cartItems]
+  );
+  const totalPrice = useMemo(
+    () => cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    [cartItems]
+  );
+
+  const itemsValue = useMemo(
+    () => ({
+      cartItems,
+      restaurantId,
+      addItem,
+      removeItem,
+      clearCart,
+      totalItems,
+      totalPrice,
+    }),
+    [cartItems, restaurantId, addItem, removeItem, clearCart, totalItems, totalPrice]
+  );
+
+  const uiValue = useMemo(
+    () => ({ isCartOpen, openCart, closeCart, toggleCart }),
+    [isCartOpen, openCart, closeCart, toggleCart]
+  );
 
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        restaurantId,
-        addItem,
-        removeItem,
-        clearCart,
-        totalItems,
-        totalPrice,
-        isCartOpen,
-        openCart,
-        closeCart,
-        toggleCart,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+    <CartItemsContext.Provider value={itemsValue}>
+      <CartUIContext.Provider value={uiValue}>{children}</CartUIContext.Provider>
+    </CartItemsContext.Provider>
   );
 };
 
-export const useCart = () => useContext(CartContext);
+// Cart data (items, totals, mutations)
+export const useCart = () => useContext(CartItemsContext);
+// Cart drawer UI state (open/close)
+export const useCartUI = () => useContext(CartUIContext);

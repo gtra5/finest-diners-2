@@ -10,7 +10,7 @@ import {
   Wrench 
 } from "lucide-react";
 
-import HeroBg from "../assets/backgroundVectors.svg";
+import HeroBg from "../assets/backgroundVectors.webp";
 import img1 from "../assets/advertisment.jpg";
 import img2 from "../assets/front-view-smiley-man-holding-pizza.jpg";
 import img3 from "../assets/medium-shot-smiley-man-eating-bistro.jpg";

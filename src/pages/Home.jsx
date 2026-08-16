@@ -1,11 +1,12 @@
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
-import api from "../services/api";
-import { useState, useEffect, useRef } from "react";
+import { cachedGet } from "../services/api";
+import { useState, useEffect, useRef, useMemo } from "react";
 import FoodCard from "../components/FoodCard";
 import Herosection from "../components/herosection";
 
 import BurgerFuelHero from "../components/advertisement";
 import Section4 from "../components/section4";
+import { useCart } from "../context/CartContext";
 import {
   Flame,
   Leaf,
@@ -35,16 +36,21 @@ const CATS = [
 
 export default function Home() {
   const heroRef = useRef(null);
+  const { cartItems, addItem } = useCart();
   const [foods, setFoods] = useState([]);
   const [flashSale, setFlashSale] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("All");
 
+  const inCartIds = useMemo(
+    () => new Set(cartItems.map((i) => i.spoonacularId)),
+    [cartItems]
+  );
+
 
   useEffect(() => {
-    api
-      .get(`/food/menu/${RESTAURANT_ID}`)
-      .then(({ data }) => {
+    cachedGet(`/food/menu/${RESTAURANT_ID}`)
+      .then((data) => {
         setFoods(data.menu.slice(0, 4));
         setFlashSale(data.menu.slice(4, 6));
       })
@@ -141,6 +147,8 @@ export default function Home() {
                     <img
                       src={item.img}
                       alt={item.name}
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (
@@ -206,6 +214,8 @@ export default function Home() {
                       key={food.spoonacularId}
                       food={food}
                       restaurantId={RESTAURANT_ID}
+                      isInCart={inCartIds.has(food.spoonacularId)}
+                      onAdd={addItem}
                     />
                   ))
                 )}

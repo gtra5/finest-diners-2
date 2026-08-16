@@ -1,21 +1,40 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useScroll, useMotionValueEvent } from "framer-motion";
-import api from "../services/api";
+import api, { cachedGet } from "../services/api";
+import { useCart } from "../context/CartContext";
 import FoodCard from "../components/FoodCard";
 import CustomerReview from "../components/customerReview";
 
 const Menu = () => {
   const { restaurantId } = useParams();
+  const { cartItems, addItem } = useCart();
   const [restaurant, setRestaurant] = useState(null);
   const [menu, setMenu] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const heroRef = useRef(null);
   const videoRef = useRef(null);
   const progressRef = useRef(0);
+
+  // Debounce the search box (~300ms) so we don't re-filter the grid on every
+  // keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  // Memoized set of spoonacular ids currently in the cart — Menu is the only
+  // component that subscribes to cartItems, so a cart change re-renders just
+  // this page, and memoized FoodCards whose isInCart flag didn't change skip.
+  const inCartIds = useMemo(
+    () => new Set(cartItems.map((i) => i.spoonacularId)),
+    [cartItems]
+  );
 
   // Scroll-scrub the hero video: progress goes 0 -> 1 as the page scrolls
   // through the tall section, and the video frame follows it.
@@ -30,18 +49,30 @@ const Menu = () => {
 
   useEffect(() => {
     const v = videoRef.current;
+    if (!v) return;
+
+    const FPS = 24;
+    const EPS = 0.5 / FPS;
+    let lastSeek = -1;
     let rafId;
+
     const tick = () => {
       rafId = requestAnimationFrame(tick);
-      if (v && v.readyState >= 1 && v.duration) {
-        const target = progressRef.current * v.duration;
-        if (Math.abs(v.currentTime - target) > 0.03) {
-          v.currentTime = target;
-        }
+      if (v.readyState < 1 || !v.duration) return;
+      // Quantize to whole frames: seek at most once per animation frame
+      // instead of hammering the decoder with redundant micro-seeks.
+      const frameIndex = Math.round(progressRef.current * v.duration * FPS);
+      const seekTo = frameIndex / FPS;
+      if (seekTo !== lastSeek && Math.abs(v.currentTime - seekTo) > EPS) {
+        lastSeek = seekTo;
+        v.currentTime = seekTo;
       }
     };
     rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
   }, []);
  
 
@@ -56,7 +87,7 @@ const Menu = () => {
       try {
         setLoading(true);
         setError("");
-        const { data } = await api.get(`/food/menu/${restaurantId}`);
+        const data = await cachedGet(`/food/menu/${restaurantId}`);
         setRestaurant(data.restaurant);
         setMenu(data.menu);
       } catch (err) {
@@ -75,9 +106,15 @@ const Menu = () => {
   ].filter((cat) => cat !== "Main");
 
   const filtered =
-    activeCategory === "All"
+    (activeCategory === "All"
       ? menu
-      : menu.filter((item) => item.category === activeCategory);
+      : menu.filter((item) => item.category === activeCategory)
+    ).filter(
+      (item) =>
+        !debouncedQuery ||
+        item.name.toLowerCase().includes(debouncedQuery) ||
+        (item.category || "").toLowerCase().includes(debouncedQuery)
+    );
 
   return (
     <div className="min-h-screen text-white w-full">
@@ -93,10 +130,11 @@ const Menu = () => {
             ref={videoRef}
             className="absolute inset-0 w-full h-full object-cover z-0"
             src="/menu-hero.mp4"
+            poster="/menu-hero-poster.jpg"
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
           />
 
           {/* Scrim so the restaurant name stays legible over the video */}
@@ -130,7 +168,7 @@ const Menu = () => {
 
      {/* ── CATEGORY FILTER ── */}
 {categories.length > 1 && (
-  <section className="w-full border-b border-neutral-800">
+      <section className="w-full border-b border-neutral-800">
     <div className="max-w-screen-xl mx-auto px-6 sm:px-12 lg:px-16 py-5">
       <div className="flex gap-2 flex-wrap">
         {categories.map((cat) => {
@@ -149,6 +187,18 @@ const Menu = () => {
             </button>
           );
         })}
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <span className="section-label text-neutral-600 shrink-0">SEARCH</span>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search dishes…"
+          aria-label="Search menu"
+          className="w-full max-w-xs bg-transparent border-b border-neutral-700 px-1 py-1.5 text-sm font-mono text-white placeholder:text-neutral-600 focus:border-lime-400 focus:outline-none transition-colors"
+        />
       </div>
     </div>
   </section>
@@ -201,6 +251,8 @@ const Menu = () => {
                   key={food.spoonacularId}
                   food={food}
                   restaurantId={restaurantId}
+                  isInCart={inCartIds.has(food.spoonacularId)}
+                  onAdd={addItem}
                 />
               ))}
             </div>

@@ -34,6 +34,34 @@ api.interceptors.response.use(
   }
 );
 
+// ── Simple in-memory GET cache with request deduping ────────────────────────
+// For data that doesn't change often (the menu), caching avoids re-fetching on
+// every visit. Concurrent identical requests share one promise instead of
+// firing N parallel network calls.
+const cache = new Map(); // url -> { promise, expiresAt }
+
+export const cachedGet = (url, { ttl = 5 * 60 * 1000 } = {}) => {
+  const now = Date.now();
+  const hit = cache.get(url);
+  if (hit && hit.expiresAt > now) return hit.promise;
+
+  const promise = api
+    .get(url)
+    .then((res) => res.data)
+    .catch((err) => {
+      // Never cache failures — a transient error shouldn't poison the cache.
+      cache.delete(url);
+      throw err;
+    });
+  cache.set(url, { promise, expiresAt: now + ttl });
+  return promise;
+};
+
+export const invalidateCache = (url) => {
+  if (url) cache.delete(url);
+  else cache.clear();
+};
+
 // Payment API functions
 export const initializePayment = async (orderId, amount, email) => {
   const { data } = await api.post('/payments/initialize', {
@@ -42,9 +70,7 @@ export const initializePayment = async (orderId, amount, email) => {
     email,
   });
   return data;
-};
-
-export const verifyPayment = async (reference) => {
+};export const verifyPayment = async (reference) => {
   const { data } = await api.get(`/payments/verify/${reference}`);
   return data;
 };

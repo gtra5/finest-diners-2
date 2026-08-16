@@ -1,4 +1,4 @@
-import { useCart } from "../context/CartContext";
+import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Plus } from "lucide-react";
 
@@ -18,13 +18,10 @@ const StarRating = ({ rating = 0, max = 5 }) => (
   </div>
 );
 
-const FoodCard = ({ food, restaurantId }) => {
-  const { addItem, cartItems } = useCart();
-  const isInCart = cartItems.some(item => item.spoonacularId === food.spoonacularId);
-
+const FoodCardImpl = ({ food, restaurantId, isInCart = false, onAdd }) => {
   const handleAddToCart = () => {
     if (!isInCart) {
-      addItem(food, restaurantId);
+      onAdd(food, restaurantId);
     }
   };
 
@@ -43,6 +40,10 @@ const FoodCard = ({ food, restaurantId }) => {
             food.imageUrl || "https://via.placeholder.com/300x200?text=No+Image"
           }
           alt={food.name}
+          loading="lazy"
+          decoding="async"
+          width={300}
+          height={200}
           className="w-full object-cover"
           style={{ height: 160 }}
         />
@@ -161,5 +162,9 @@ const FoodCard = ({ food, restaurantId }) => {
     </motion.div>
   );
 };
+
+// Memoized so adding an item to the cart only re-renders cards whose
+// isInCart prop actually changed (Menu/Home pass per-card booleans).
+const FoodCard = memo(FoodCardImpl);
 
 export default FoodCard;
