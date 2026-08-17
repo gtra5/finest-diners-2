@@ -63,12 +63,16 @@ export default function Checkout() {
   // Reverse geocoding failure is non-fatal — the raw lat/lng is already enough
   // for the rider to navigate, the address is just a friendlier confirmation.
   const updateCoordsAndAddress = async (latitude, longitude) => {
+    console.log('[Checkout] updateCoordsAndAddress called with:', { latitude, longitude });
     setCoords({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
     setAddressLoading(true);
     try {
+      console.log('[Checkout] Calling getAddressFromCoords API...');
       const address = await getAddressFromCoords(latitude, longitude);
+      console.log('[Checkout] Address received:', address);
       setReadableAddress(address.formattedAddress || "");
-    } catch {
+    } catch (err) {
+      console.error('[Checkout] Address lookup failed:', err);
       setReadableAddress("");
     } finally {
       setAddressLoading(false);

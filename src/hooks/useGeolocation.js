@@ -5,7 +5,10 @@ export const useGeolocation = () => {
   const [error, setError] = useState(null);
 
   const getCurrentLocation = useCallback(async () => {
+    console.log('[useGeolocation] getCurrentLocation called');
+    
     if (!navigator.geolocation) {
+      console.error('[useGeolocation] Geolocation not supported');
       setError('Geolocation is not supported by your browser');
       return null;
     }
@@ -14,10 +17,17 @@ export const useGeolocation = () => {
     setError(null);
 
     try {
+      console.log('[useGeolocation] Requesting GPS position...');
       const position = await new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
-          (position) => resolve(position),
-          (error) => reject(error),
+          (position) => {
+            console.log('[useGeolocation] GPS position received:', position.coords);
+            resolve(position);
+          },
+          (error) => {
+            console.error('[useGeolocation] GPS error:', error);
+            reject(error);
+          },
           {
             enableHighAccuracy: true,
             timeout: 10000,
@@ -27,8 +37,10 @@ export const useGeolocation = () => {
       });
 
       const { latitude, longitude } = position.coords;
+      console.log('[useGeolocation] Returning coordinates:', { latitude, longitude });
       return { latitude, longitude };
     } catch (err) {
+      console.error('[useGeolocation] Exception:', err);
       let errorMessage = 'Failed to get your location';
       
       switch (err.code) {
