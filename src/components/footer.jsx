@@ -157,18 +157,12 @@ export default function FooterStatement() {
 
         {/* Oversized cutout wordmark, bleeding at the base */}
         <div className="relative -mb-3 select-none overflow-hidden text-center sm:-mb-6 md:-mb-10">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse at 50% 100%, #3B2412 0%, transparent 65%)",
-            }}
-          />
+          
           <h2
             className="relative whitespace-nowrap font-black leading-none"
             style={{
               fontSize: "clamp(64px, 15vw, 260px)",
-              WebkitTextStroke: `1px ${olive}`,
+              WebkitTextStroke: `1.5px ${olive}`,
               color: "transparent",
               letterSpacing: "-0.04em",
               fontFamily: "Arial Black, sans-serif",
