@@ -19,6 +19,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { initializePayment, createOrder, getAddressFromCoords } from "../services/api";
 import { useGeolocation } from "../hooks/useGeolocation";
+import TicketBand from "../components/TicketBand";
 
 const OLIVE = "#6B7C2F";
 const OLIVE_DIM = "#3a4419";
@@ -209,7 +210,12 @@ export default function Checkout() {
           >
             <Clock className="w-3.5 h-3.5" /> ARRIVING IN 30–45 MINS
           </div>
-          <button
+
+          <div className="mb-6 -mx-8">
+            <TicketBand label="ADMIT ONE · CONFIRMED" />
+          </div>
+
+          <motion.button
             onClick={() => navigate("/orders")}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -217,7 +223,7 @@ export default function Checkout() {
             style={{ background: OLIVE, color: "#fff", fontFamily: "Arial Black, sans-serif", fontSize: "14px" }}
           >
             TRACK MY ORDER <ArrowRight className="w-4 h-4" />
-          </button>
+          </motion.button>
         </motion.div>
       </div>
     );
@@ -261,6 +267,15 @@ export default function Checkout() {
           >
             Tell us exactly where to bring your order.
           </motion.p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+          className="mb-6 sm:mb-8"
+        >
+          <TicketBand label="ORDER TICKET" />
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
@@ -330,7 +345,7 @@ export default function Checkout() {
                 </div>
               )}
 
-              <button
+              <motion.button
                 type="button"
                 onClick={handleRefreshLocation}
                 disabled={loadingLocation}
@@ -345,7 +360,7 @@ export default function Checkout() {
                   <Navigation className="w-4 h-4" />
                 )}
                 {loadingLocation ? "REFRESHING LOCATION…" : "REFRESH GPS LOCATION"}
-              </button>
+              </motion.button>
 
               {fieldError("coords")}
             </motion.section>
@@ -408,7 +423,7 @@ export default function Checkout() {
                 </p>
               )}
 
-              <button
+              <motion.button
                 type="button"
                 onClick={handleConfirm}
                 disabled={submitting}
@@ -424,7 +439,7 @@ export default function Checkout() {
                 ) : (
                   <>CONFIRM & PLACE ORDER</>
                 )}
-              </button>
+              </motion.button>
             </motion.section>
           </div>
 

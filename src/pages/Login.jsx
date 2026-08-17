@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
+import TicketBand from '../components/TicketBand.jsx';
 
 const OLIVE = "#6B7C2F";
 const OLIVE_DIM = "#3a4419";
@@ -81,6 +82,15 @@ const Login = () => {
                 Welcome back to Finest Diners.
               </motion.p>
             </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28 }}
+              className="mb-8"
+            >
+              <TicketBand label="MEMBERS ENTRANCE" />
+            </motion.div>
 
             {error && (
               <motion.div

@@ -2,8 +2,17 @@
 @import url("https://fonts.googleapis.com/css2?family=Modak&display=swap");
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html {
   scroll-behavior: smooth;
+  background-color: #050A0A;
+  color: #ffffff;
+}
+
+body {
+  background-color: #050A0A;
+  color: #ffffff;
 }
 
 button:not(:disabled),

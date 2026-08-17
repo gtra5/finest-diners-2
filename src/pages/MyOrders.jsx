@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../services/api';
+import TicketBand from '../components/TicketBand';
 
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
 
@@ -122,6 +123,15 @@ export default function MyOrders() {
           {orders.length} ORDER{orders.length !== 1 ? 'S' : ''} IN YOUR HISTORY
         </motion.p>
       </section>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.28 }}
+        className="max-w-screen-xl mx-auto mb-8"
+      >
+        <TicketBand label="ORDER HISTORY" />
+      </motion.div>
 
       {/* ── EMPTY STATE ── */}
       {orders.length === 0 ? (

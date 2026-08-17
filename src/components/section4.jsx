@@ -91,11 +91,16 @@ const FLOATERS = [
 const cardVariants = {
   hidden: (rotate) => ({ opacity: 0, y: 40, scale: 0.9, rotate }),
   visible: (rotate) => ({
-    opacity: 1, y: 0, scale: 1, rotate,
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    rotate,
     transition: { type: "spring", stiffness: 200, damping: 18 },
   }),
   hover: (rotate) => ({
-    rotate: rotate * 0.3, scale: 1.06, y: -10,
+    rotate: rotate * 0.3,
+    scale: 1.06,
+    y: -10,
     transition: { type: "spring", stiffness: 300, damping: 20 },
   }),
 };
@@ -120,8 +125,6 @@ function Section4() {
         overflow: "hidden",
       }}
     >
-      
-
       {/* Floating decorative food images */}
       {FLOATERS.map((f, i) => (
         <motion.img
@@ -131,7 +134,11 @@ function Section4() {
           initial={{ opacity: 0, scale: 0.8, rotate: f.rotate }}
           whileInView={{ opacity: f.opacity, scale: 1, rotate: f.rotate }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+          transition={{
+            duration: 0.7,
+            delay: i * 0.08,
+            ease: [0.16, 1, 0.3, 1],
+          }}
           style={{
             position: "absolute",
             top: f.top,
@@ -211,28 +218,28 @@ function Section4() {
               }}
             >
               Every dish is a study in contrast. Premium ingredients,
-              stripped-down execution. No tablecloths. No pretension.
-              Just food that earns its price tag on every single bite.
+              stripped-down execution. No tablecloths. No pretension. Just food
+              that earns its price tag on every single bite.
             </p>
 
-              <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          className="text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-12 py-2 sm:py-3 md:py-4"
-          style={{
-            fontFamily: "Mouse Memoirs, serif",
-            fontSize: "clamp(0.875rem, 2vw, 1.3rem)",
-            letterSpacing: "0.08em",
-            background: "#6B7C2F",
-            color: "#fff",
-            border: "2px solid #fff",
-            borderRadius: "999px",
-            cursor: "pointer",
-            boxShadow: "0 8px 32px rgba(107,124,47,0.35)",
-          }}
-        >
-          Order Now
-        </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
+              className="text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-12 py-2 sm:py-3 md:py-4"
+              style={{
+                fontFamily: "Mouse Memoirs, serif",
+                fontSize: "clamp(0.875rem, 2vw, 1.3rem)",
+                letterSpacing: "0.08em",
+                background: "#6B7C2F",
+                color: "#fff",
+                border: "2px solid #fff",
+                borderRadius: "999px",
+                cursor: "pointer",
+                boxShadow: "0 8px 32px rgba(107,124,47,0.35)",
+              }}
+            >
+              Order Now
+            </motion.button>
           </motion.div>
 
           {/* Right: stats */}
