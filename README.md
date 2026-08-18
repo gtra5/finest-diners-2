@@ -4,6 +4,26 @@ The customer-facing web app for **Finest Diners**, a restaurant food-delivery pl
 
 Built with **React 19 + Vite 8 + Tailwind CSS 4**, animated with **Framer Motion**, and talking to a Node/Express backend over **REST** (Axios) and **Socket.IO**.
 
+## What This Application Does
+
+Finest Diners is a full-featured food delivery platform that connects customers with restaurants. The frontend application provides:
+
+### Customer Experience
+- **Browse Restaurants**: View featured restaurants and their menus with rich media (hero videos, food images)
+- **Menu Exploration**: Filter food by categories, view detailed item information, and add items to cart
+- **Cart Management**: Real-time cart updates with quantity controls, price calculations, and restaurant mixing prevention
+- **GPS-Based Checkout**: Automatic location detection using browser geolocation, reverse-geocoded to readable addresses
+- **Payment Processing**: Multiple payment methods (Card, Apple Pay, Cash on Delivery) with Paystack integration
+- **Order Tracking**: Real-time order status updates and live GPS tracking of delivery drivers
+- **Account Management**: User registration, login, and order history
+
+### Technical Features
+- **Real-Time Communication**: Socket.IO integration for live order updates and driver location tracking
+- **Geolocation Services**: Browser GPS API for customer location, backend reverse-geocoding via OpenCage API
+- **Responsive Design**: Mobile-first approach with adaptive layouts for all screen sizes
+- **Performance Optimizations**: Request caching, lazy loading, and optimized asset delivery
+- **Security**: JWT authentication, protected routes, and secure API communication
+
 ---
 
 ## Tech Stack
