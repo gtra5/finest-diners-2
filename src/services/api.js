@@ -122,4 +122,12 @@ export const getAddressFromCoords = async (latitude, longitude) => {
   return data;
 };
 
+// Calculate ETA and distance between two coordinates using OSRM
+export const calculateRoute = async (fromLat, fromLng, toLat, toLng) => {
+  const { data } = await api.get('/location/route', {
+    params: { fromLat, fromLng, toLat, toLng },
+  });
+  return data;
+};
+
 export default api;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../services/api';
+import { io } from 'socket.io-client';
 
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
 
@@ -36,6 +37,8 @@ const OrderTracking = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [eta, setEta] = useState(null);
+  const [distance, setDistance] = useState(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -52,6 +55,34 @@ const OrderTracking = () => {
     const interval = setInterval(fetchOrder, 15000);
     return () => clearInterval(interval);
   }, [id]);
+
+  // Socket.IO connection for live location updates
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !order) return;
+
+    const baseURL = import.meta.env.VITE_API_URL?.replace('/api', '');
+    const socket = io(baseURL, {
+      auth: { token },
+      transports: ['websocket'],
+    });
+
+    socket.emit('join_order_room', { orderId: id });
+
+    socket.on('location:update', (data) => {
+      if (data.eta !== undefined) setEta(data.eta);
+      if (data.distance !== undefined) setDistance(data.distance);
+    });
+
+    socket.on('tracking:error', (data) => {
+      console.error('Tracking error:', data.message);
+    });
+
+    return () => {
+      socket.emit('leave_order_room', { orderId: id });
+      socket.disconnect();
+    };
+  }, [id, order]);
 
   if (loading) {
     return (
@@ -231,6 +262,19 @@ const OrderTracking = () => {
                 <p className="text-[10px] font-mono tracking-widest mb-1" style={{ color: "#5a6a5a" }}>ADDRESS</p>
                 <p className="text-sm font-mono" style={{ color: "#fff" }}>📍 {order.deliveryAddress}</p>
               </div>
+              {order.status === 'out_for_delivery' && (eta !== null || distance !== null) && (
+                <div>
+                  <p className="text-[10px] font-mono tracking-widest mb-1" style={{ color: "#5a6a5a" }}>ETA</p>
+                  <p className="text-sm font-mono" style={{ color: OLIVE_LIGHT }}>
+                    {eta !== null ? `⏱️ ${eta} min away` : 'Calculating...'}
+                  </p>
+                  {distance !== null && (
+                    <p className="text-xs font-mono mt-1" style={{ color: "#7a8a7a" }}>
+                      📏 {distance} km
+                    </p>
+                  )}
+                </div>
+              )}
               <div>
                 <p className="text-[10px] font-mono tracking-widest mb-1" style={{ color: "#5a6a5a" }}>PAYMENT</p>
                 <p className="text-sm font-mono" style={{ color: "#fff" }}>
