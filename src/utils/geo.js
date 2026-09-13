@@ -35,7 +35,7 @@ export const cacheCoords = ({ latitude, longitude, accuracy, source }) => {
 };
 
 // ── Reverse-geocoded address cache ───────────────────────────────────────
-const addrKey = (lat, lng) => `${lat.toFixed(4)},${lng.toFixed(4)}`;
+const addrKey = (lat, lng) => `${lat.toFixed(6)},${lng.toFixed(6)}`; // Increased precision from 4 to 6 decimals (~11cm vs ~11m)
 
 export const getCachedAddress = (latitude, longitude) => {
   const all = safeParse(localStorage.getItem(ADDR_KEY));

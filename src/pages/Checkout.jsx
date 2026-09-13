@@ -91,19 +91,23 @@ export default function Checkout() {
   // Addresses are cached per-coordinate for 24h so repeat checkouts don't burn
   // an OpenCage call every time.
   const updateCoordsAndAddress = async (latitude, longitude) => {
+    console.log('[Checkout] Setting coordinates:', { latitude, longitude });
     setCoords({ lat: latitude.toFixed(6), lng: longitude.toFixed(6) });
     cacheCoords({ latitude, longitude });
 
     const cachedAddress = getCachedAddress(latitude, longitude);
     if (cachedAddress) {
+      console.log('[Checkout] Using cached address:', cachedAddress);
       setReadableAddress(cachedAddress);
       return;
     }
 
     setAddressLoading(true);
     try {
+      console.log('[Checkout] Fetching address from backend for:', { latitude, longitude });
       const address = await getAddressFromCoords(latitude, longitude);
       const formatted = address.formattedAddress || "";
+      console.log('[Checkout] Received address:', formatted);
       setReadableAddress(formatted);
       if (formatted) cacheAddress(latitude, longitude, formatted);
     } catch (err) {
