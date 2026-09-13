@@ -11,11 +11,11 @@ export const useGeolocation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const getCurrentLocation = useCallback(async () => {
+  const getCurrentLocation = useCallback(async (bypassCache = false) => {
     setLoading(true);
     setError(null);
     try {
-      const loc = await locateBest();
+      const loc = await locateBest(bypassCache);
       cacheCoords(loc);
       return loc;
     } catch (err) {

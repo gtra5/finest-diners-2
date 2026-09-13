@@ -11,7 +11,7 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const CACHE_KEY = 'fd:last-loc';
 const ADDR_KEY = 'fd:addr-cache';
-const COORDS_FRESH_MS = 10 * 60 * 1000; // reuse cached coords under this age
+const COORDS_FRESH_MS = 1 * 60 * 1000; // reuse cached coords under this age (reduced from 10min for accuracy)
 const ADDR_TTL_MS = 24 * 60 * 60 * 1000; // cached reverse-geocode lifetime
 const NATIVE_TIMEOUT_MS = 6000;
 const IP_TIMEOUT_MS = 3500;
@@ -87,9 +87,12 @@ const ipPosition = async () => {
 // Resolve the best location we can, fastest-first. Throws ONLY when nothing
 // can be determined (native + IP both failed) so the caller can show a real
 // message instead of failing silently.
-export const locateBest = async () => {
-  const cached = getCachedCoords();
-  if (cached) return { ...cached, source: 'cache' };
+// @param {boolean} bypassCache - if true, skip cache and force fresh GPS read
+export const locateBest = async (bypassCache = false) => {
+  if (!bypassCache) {
+    const cached = getCachedCoords();
+    if (cached) return { ...cached, source: 'cache' };
+  }
 
   try {
     const coords = await nativePosition();

@@ -167,7 +167,7 @@ export default function Checkout() {
     setLoadingLocation(true);
     setLocationError(null);
     setLocationApprox(false);
-    const location = await getCurrentLocation();
+    const location = await getCurrentLocation(true); // bypass cache for fresh GPS
     if (location) {
       await updateCoordsAndAddress(location.latitude, location.longitude);
       if (
