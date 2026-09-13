@@ -64,9 +64,9 @@ const nativePosition = (timeout = NATIVE_TIMEOUT_MS) =>
     const onSuccess = (pos) => resolve(pos.coords);
     const onError = (err) => reject(err);
     navigator.geolocation.getCurrentPosition(onSuccess, onError, {
-      enableHighAccuracy: false, // fast first fix; high precision is rarely worth the extra seconds
+      enableHighAccuracy: true, // Use GPS for precise location needed for delivery addresses
       timeout,
-      maximumAge: 3000,
+      maximumAge: 0, // Force fresh location, not cached
     });
   });
 
