@@ -13,7 +13,7 @@ const CACHE_KEY = 'fd:last-loc';
 const ADDR_KEY = 'fd:addr-cache';
 const COORDS_FRESH_MS = 1 * 60 * 1000; // reuse cached coords under this age (reduced from 10min for accuracy)
 const ADDR_TTL_MS = 24 * 60 * 60 * 1000; // cached reverse-geocode lifetime
-const NATIVE_TIMEOUT_MS = 6000;
+const NATIVE_TIMEOUT_MS = 20000; // Increased from 6s to 20s for mobile GPS to get high-accuracy fix
 const IP_TIMEOUT_MS = 3500;
 
 const safeParse = (str) => {
@@ -61,8 +61,24 @@ const nativePosition = (timeout = NATIVE_TIMEOUT_MS) =>
       reject(new Error('Geolocation unsupported'));
       return;
     }
-    const onSuccess = (pos) => resolve(pos.coords);
-    const onError = (err) => reject(err);
+    const onSuccess = (pos) => {
+      console.log('[GPS] Success:', {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        accuracy: pos.coords.accuracy,
+        source: 'gps'
+      });
+      resolve(pos.coords);
+    };
+    const onError = (err) => {
+      console.log('[GPS] Error:', {
+        code: err.code,
+        message: err.message,
+        codeName: err.code === 1 ? 'PERMISSION_DENIED' : err.code === 2 ? 'POSITION_UNAVAILABLE' : err.code === 3 ? 'TIMEOUT' : 'UNKNOWN'
+      });
+      reject(err);
+    };
+    console.log('[GPS] Requesting location with high accuracy, timeout:', timeout);
     navigator.geolocation.getCurrentPosition(onSuccess, onError, {
       enableHighAccuracy: true, // Use GPS for precise location needed for delivery addresses
       timeout,
