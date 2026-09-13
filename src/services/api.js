@@ -22,13 +22,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Auth endpoints return 401 for wrong credentials/OTP — those must NOT bounce
+// the user to the login page (the form itself shows the error).
+const isAuthAttempt = (url = '') =>
+  /\/auth\/login(\/|$)|\/auth\/register(\/|$)|\/auth\/otp\//.test(url);
+
 // Global response error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isAuthAttempt(error.config?.url)) {
+      // Session expired or token became invalid. Clear the stored session and
+      // dispatch a signal so the app can navigate to /login as a single-page
+      // update (with state preserved) instead of a hard window reload.
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('finest-auth');
+      window.dispatchEvent(new Event('finest:unauthorized'));
     }
     return Promise.reject(error);
   }
@@ -63,10 +72,11 @@ export const invalidateCache = (url) => {
 };
 
 // Payment API functions
-export const initializePayment = async (orderId, amount, email) => {
+export const initializePayment = async (orderId, _amount, email) => {
+  // Amount is intentionally NOT sent — the server reads the authoritative
+  // order total from the database to prevent price tampering.
   const { data } = await api.post('/payments/initialize', {
     orderId,
-    amount,
     email,
   });
   return data;
@@ -83,6 +93,18 @@ export const createOrder = async (orderData) => {
 
 export const getOrder = async (orderId) => {
   const { data } = await api.get(`/orders/${orderId}`);
+  return data;
+};
+
+// Customer confirms they've received a delivered order
+export const confirmReceipt = async (orderId) => {
+  const { data } = await api.put(`/orders/${orderId}/receive`);
+  return data;
+};
+
+// Customer submits a complaint for a delivered/received order
+export const submitComplaint = async (orderId, complaint) => {
+  const { data } = await api.post('/complaints', { orderId, complaint });
   return data;
 };
 

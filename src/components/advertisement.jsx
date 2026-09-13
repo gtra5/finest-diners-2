@@ -2,11 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import img1 from "../assets/bugers.png";
 import { MoveRight } from "lucide-react";
-import img2 from "../assets/chicken_2_compressed.png";
+import img2 from "../assets/chickens.png";
+import img3 from "../assets/pizza3.png";
+import img4 from "../assets/tacos.png";
+import img5 from "../assets/sushi (3).png";
+
 import api from "../services/api";
 import MobileBurgerHero from "../components/MobileBurgerHero";
-
-const STRIP_IMAGES = [img1, img2, img1, img1, img1, img1, img1, img1, img1];
+import img6 from "../assets/saladd.png";
+import img7 from "../assets/donought.png";
+const STRIP_IMAGES = [img1, img2, img3, img4, img5, img1, img7, img6, img3];
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
 const DESKTOP_LINES = ["OUR FOOD"];
 
@@ -188,7 +193,7 @@ export default function BurgerFuelHero() {
               <h1
                 className="text-[#111] leading-none text-3xl sm:text-4xl md:text-[clamp(20px,5vw,56px)]"
                 style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
+                 fontFamily: UI_FONT,
                   lineHeight: "1",
                   marginBottom: "clamp(8px, 2vw, 12px)",
                 }}
@@ -209,13 +214,16 @@ export default function BurgerFuelHero() {
               </h1>
               <p
                 style={{
-                  fontSize: "clamp(13px, 1.8vw, 15px)",
-                  color: BG,
-                  opacity: 0.68,
-                  lineHeight: 1.6,
-                  marginBottom: "clamp(12px, 3vw, 20px)",
+                  fontSize: "clamp(16px, 2.2vw, 20px)",
+                  color: "#f5f5f0",
+                  opacity: 0.95,
+                  lineHeight: 1.7,
+                  marginBottom: "clamp(16px, 3vw, 24px)",
+                  fontWeight: 500,
+                  letterSpacing: "0.01em",
                 }}
                 className="max-w-xl md:max-w-lg"
+                style={{ fontFamily: UI_FONT, }}
               >
                 No shortcuts. No reheated nonsense. Every item on the menu gets
                 the same obsessive treatment whether it costs $10 or $25, it
@@ -316,6 +324,8 @@ export default function BurgerFuelHero() {
                     <img
                       src={item.imageUrl}
                       alt={item.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full object-cover rounded"
                       style={{ height: "clamp(90px, 20vw, 150px)" }}
                     />

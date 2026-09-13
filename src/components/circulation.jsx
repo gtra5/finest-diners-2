@@ -188,6 +188,8 @@ const StickerPeel = ({
               src={imageSrc}
               alt=""
               style={imageStyle}
+              loading="lazy"
+              decoding="async"
               draggable="false"
               onContextMenu={e => e.preventDefault()}
             />
@@ -213,6 +215,8 @@ const StickerPeel = ({
               src={imageSrc}
               alt=""
               style={shadowImageStyle}
+              loading="lazy"
+              decoding="async"
               draggable="false"
               onContextMenu={e => e.preventDefault()}
             />
@@ -235,6 +239,8 @@ const StickerPeel = ({
               src={imageSrc}
               alt=""
               style={shadowImageStyle}
+              loading="lazy"
+              decoding="async"
               draggable="false"
               onContextMenu={e => e.preventDefault()}
             />

@@ -4,6 +4,7 @@ import burgerImg from "../assets/bugers.png";
 import cabbageImg from "../assets/cabbage.png";
 import saladImg from "../assets/salad (3).png";
 import tomatoImg from "../assets/tomatotes.png";
+import backgroundVectors from "../assets/backgroundVectors.webp";
 
 const scallopedWaveFlipped = (color = "#050A0A") =>
   `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 100'%3E%3Cg transform='matrix(1 0 0 -1 0 100)'%3E%3Cpath d='M0 0v60c9 0 18-3 25-10 13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s36 14 50 0c13-14 36-14 50 0s37 13 50 0c14-14 37-14 50 0 7 7 16 10 25 10V0H0Z' fill='${encodeURIComponent(
@@ -34,35 +35,54 @@ function CustomerReview() {
 
   return (
     <section className="relative overflow-hidden bg-white min-h-[600px] sm:min-h-[700px] md:min-h-[60dvh] py-12 sm:py-16 lg:py-20">
+       <img
+                src={backgroundVectors}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                style={{ mixBlendMode: "multiply",  }}
+              />
       {/* Decorative background produce — one per side */}
       <img
         src={burgerImg}
         alt=""
         aria-hidden="true"
+        loading="lazy"
+        decoding="async"
         className="pointer-events-none select-none  absolute -top-8 -left-8 z-1 w-24 sm:w-32 lg:w-44 -rotate-12 opacity-90 drop-shadow-xl"
       />
       <img
         src={tomatoImg}
         alt=""
         aria-hidden="true"
+        loading="lazy"
+        decoding="async"
         className="pointer-events-none select-none absolute -top-10 -right-10 z-1 w-28 sm:w-40 lg:w-56 rotate-[18deg] opacity-90 drop-shadow-xl"
       />
       <img
         src={saladImg}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none select-none absolute bottom-16 -left-6 z-2 w-28 sm:w-40 lg:w-52 -rotate-6 opacity-90 drop-shadow-xl"
+        loading="lazy"
+        decoding="async"
+        className="pointer-events-none select-none absolute bottom-16 -left-6 z-2 w-28 sm:w-40 lg:w-52 -rotate-6  drop-shadow-xl"
       />
       <img
         src={cabbageImg}
         alt=""
         aria-hidden="true"
+        loading="lazy"
+        decoding="async"
         className="pointer-events-none select-none absolute bottom-14 -right-4 z-2 w-24 sm:w-32 lg:w-44 rotate-[10deg] opacity-90 drop-shadow-xl"
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 ">
+         
         <div className="mb-14 text-center">
-          <h2 className="hero-title text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-[0.08em] text-neutral-900">
+          <h2 className="hero-title text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-[0.08em] text-neutral-900"
+          style={{
+            fontFamily: "Arial Black, sans-serif",
+          }}
+          >
             CUSTOMER REVIEWS
           </h2>
 
@@ -128,14 +148,7 @@ function CustomerReview() {
         </div>
       </div>
 
-      <div
-        className="absolute bottom-0 left-0 h-[100px] w-full"
-        style={{
-          backgroundImage: scallopedWaveFlipped("#050A0A"),
-          backgroundRepeat: "repeat-x",
-          backgroundSize: "auto 100%",
-        }}
-      />
+     
     </section>
   );
 }

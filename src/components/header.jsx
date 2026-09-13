@@ -1,9 +1,9 @@
 import { Menu, X, Leaf } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../stores/authStore";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-
+import backgroundVectors from "../assets/backgroundVectors.webp";
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
 
 const navItems = [
@@ -75,7 +75,8 @@ const NAV_THEMES = {
 const HEADER_OFFSET = 76;
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [nav, setNav] = useState(BASE_NAV);
@@ -232,6 +233,12 @@ export default function Header() {
                 className="absolute right-0 top-full mt-2 rounded-[1.75rem] overflow-hidden px-6 py-8"
                 style={{ background: "#4B5A22", width: "300px" }}
               >
+                 <img
+                                src={backgroundVectors}
+                                alt=""
+                                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                style={{ mixBlendMode: "multiply",  }}
+                              />
                 {/* decorative circular icon */}
                 <div
                   className="hidden md:flex absolute left-[-20px] top-10

@@ -2,13 +2,13 @@ import { memo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useCart, useCartUI } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
+import { useCartStore } from '../stores/cartStore';
+import { useAuthStore } from '../stores/authStore';
 
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
 
 // ── Slide-in cart drawer ──
-// Rendered once at the app root. Opens/closes based on CartContext's
+// Rendered once at the app root. Opens/closes based on the cart store's
 // isCartOpen flag so it can be triggered from anywhere (e.g. the
 // floating cart button) without navigating to a dedicated page.
 const CartPopup = memo(() => {
@@ -20,9 +20,10 @@ const CartPopup = memo(() => {
     totalPrice,
     totalItems,
     restaurantId,
-  } = useCart();
-  const { isCartOpen, closeCart } = useCartUI();
-  const { user } = useAuth();
+    isCartOpen,
+    closeCart,
+  } = useCartStore();
+  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
 
   // Lock page scroll while the drawer is open

@@ -1,9 +1,9 @@
-import { lazy, Suspense, memo, useRef } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, memo, useRef, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingCart } from 'lucide-react';
-import { AuthProvider  } from './context/AuthContext';
-import { CartProvider, useCart, useCartUI } from './context/CartContext';
+import { useCartStore } from './stores/cartStore';
+import { useAuthStore } from './stores/authStore';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Header from './components/header';
@@ -22,6 +22,11 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 const OrderTracking = lazy(() => import('./pages/OrderTracking'));
 const About = lazy(() => import('./pages/About'));
 const MyOrders = lazy(() => import('./pages/MyOrders'));
+const PaymentCallback = lazy(() => import('./pages/PaymentCallback'));
+
+// Routes that render their own full-page chrome (auth screens) and should not
+// get the global Header/Footer wrapped around them.
+const NO_CHROME_ROUTES = ['/login', '/register'];
 
 // Minimal full-screen fallback so route chunks can load without a flash of
 // unstyled/empty content. Kept inline so it lives in the tiny entry chunk.
@@ -37,8 +42,8 @@ const PageLoader = () => (
 // Memoized: only re-renders when the cart total badge or the drawer's
 // open/close state actually changes, not on unrelated app state.
 const CartButton = memo(() => {
-  const { totalItems } = useCart();
-  const { openCart } = useCartUI();
+  const totalItems = useCartStore((s) => s.totalItems);
+  const openCart = useCartStore((s) => s.openCart);
   const constraintsRef = useRef(null);
   const dragStart = useRef({ x: 0, y: 0 });
   const didDrag = useRef(false);
@@ -87,45 +92,68 @@ const CartButton = memo(() => {
   );
 });
 
-const AppLayout = () => (
-  <div className="min-h-screen bg-[#030505]">
-    <ScrollToTop />
-    <Header />
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/"                   element={<Home />} />
-        <Route path="/menu/:restaurantId" element={<Menu />} />
-        <Route path="/login"              element={<Login />} />
-        <Route path="/register"           element={<Register />} />
-        <Route path="/about"              element={<About />} />
-        <Route
-          path="/checkout"
-          element={<ProtectedRoute><Checkout /></ProtectedRoute>}
-        />
-        <Route
-          path="/orders/:id"
-          element={<ProtectedRoute><OrderTracking /></ProtectedRoute>}
-        />
-        <Route
-          path="/orders"
-          element={<ProtectedRoute><MyOrders /></ProtectedRoute>}
-        />
-      </Routes>
-    </Suspense>
-    <Footer/>
-    <CartButton />
-    <CartPopup />
-  </div>
-);
+const AppLayout = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const bootstrap = useAuthStore((s) => s.bootstrap);
+  const hideChrome = NO_CHROME_ROUTES.includes(location.pathname);
+
+  // Validate any session restored from localStorage on first load. A stale JWT
+  // (e.g. from an older backend deploy) makes every protected call 401 — better
+  // to catch it here and land cleanly on /login than mid-checkout.
+  useEffect(() => {
+    bootstrap();
+  }, [bootstrap]);
+
+  // The api interceptor dispatches 'finest:unauthorized' when any protected
+  // endpoint 401s. Navigate to /login as a single-page update (no hard reload).
+  useEffect(() => {
+    const onUnauthorized = () => {
+      if (location.pathname !== '/login') {
+        navigate('/login', { replace: true, state: { sessionExpired: true } });
+      }
+    };
+    window.addEventListener('finest:unauthorized', onUnauthorized);
+    return () => window.removeEventListener('finest:unauthorized', onUnauthorized);
+  }, [navigate, location.pathname]);
+
+  return (
+    <div className="min-h-screen bg-[#030505]">
+      <ScrollToTop />
+      {!hideChrome && <Header />}
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/"                   element={<Home />} />
+          <Route path="/menu/:restaurantId" element={<Menu />} />
+          <Route path="/login"              element={<Login />} />
+          <Route path="/register"           element={<Register />} />
+          <Route path="/about"              element={<About />} />
+          <Route path="/payment/callback"   element={<PaymentCallback />} />
+          <Route
+            path="/checkout"
+            element={<ProtectedRoute><Checkout /></ProtectedRoute>}
+          />
+          <Route
+            path="/orders/:id"
+            element={<ProtectedRoute><OrderTracking /></ProtectedRoute>}
+          />
+          <Route
+            path="/orders"
+            element={<ProtectedRoute><MyOrders /></ProtectedRoute>}
+          />
+        </Routes>
+      </Suspense>
+      {!hideChrome && <Footer/>}
+      <CartButton />
+      <CartPopup />
+    </div>
+  );
+};
 
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <AppLayout />
-        </CartProvider>
-      </AuthProvider>
+      <AppLayout />
     </BrowserRouter>
   );
 }

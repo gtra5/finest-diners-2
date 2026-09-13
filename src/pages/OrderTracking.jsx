@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import api from '../services/api';
-import { io } from 'socket.io-client';
+import api, { confirmReceipt, submitComplaint } from '../services/api';
+import { getSocket } from '../services/socket';
 
 const RESTAURANT_ID = import.meta.env.VITE_RESTAURANT_ID;
 
@@ -39,6 +39,45 @@ const OrderTracking = () => {
   const [error, setError] = useState('');
   const [eta, setEta] = useState(null);
   const [distance, setDistance] = useState(null);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmMsg, setConfirmMsg] = useState('');
+  const [complaint, setComplaint] = useState('');
+  const [complaintError, setComplaintError] = useState('');
+  const [complaintSuccess, setComplaintSuccess] = useState(false);
+  const [submittingComplaint, setSubmittingComplaint] = useState(false);
+  const [showComplaintForm, setShowComplaintForm] = useState(false);
+
+  // Customer confirms receipt of a delivered order
+  const handleConfirmReceipt = async () => {
+    setConfirming(true);
+    setConfirmMsg('');
+    try {
+      const { data } = await api.put(`/orders/${id}/receive`);
+      setOrder(data);
+      setConfirmMsg('Thanks! Enjoy your meal.');
+    } catch (err) {
+      setConfirmMsg(err?.response?.data?.message || 'Could not confirm receipt.');
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  // Customer files a complaint
+  const handleSubmitComplaint = async (e) => {
+    e.preventDefault();
+    setComplaintError('');
+    setComplaintSuccess(false);
+    setSubmittingComplaint(true);
+    try {
+      await submitComplaint(id, complaint);
+      setComplaintSuccess(true);
+      setComplaint('');
+    } catch (err) {
+      setComplaintError(err?.response?.data?.message || 'Failed to submit complaint.');
+    } finally {
+      setSubmittingComplaint(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -56,31 +95,45 @@ const OrderTracking = () => {
     return () => clearInterval(interval);
   }, [id]);
 
-  // Socket.IO connection for live location updates
+  // Socket.IO for live driver location updates, using the shared singleton
+  // (getSocket) so the connection is reused with a single authenticated
+  // transport instead of opening a new raw socket per page.
   useEffect(() => {
+    if (!order) return undefined;
+
     const token = localStorage.getItem('token');
-    if (!token || !order) return;
+    if (!token) return undefined;
 
-    const baseURL = import.meta.env.VITE_API_URL?.replace('/api', '');
-    const socket = io(baseURL, {
-      auth: { token },
-      transports: ['websocket'],
-    });
+    const socket = getSocket();
+    if (!socket.connected) socket.connect();
 
-    socket.emit('join_order_room', { orderId: id });
+    const join = () => socket.emit('join_order_room', { orderId: id });
 
-    socket.on('location:update', (data) => {
+    const onUpdate = (data) => {
       if (data.eta !== undefined) setEta(data.eta);
       if (data.distance !== undefined) setDistance(data.distance);
-    });
-
-    socket.on('tracking:error', (data) => {
+    };
+    const onError = (data) => {
       console.error('Tracking error:', data.message);
-    });
+    };
+
+    socket.on('connect', join);
+    socket.on('location:update', onUpdate);
+    socket.on('tracking:error', onError);
+    if (socket.connected) join();
 
     return () => {
+      socket.off('connect', join);
+      socket.off('location:update', onUpdate);
+      socket.off('tracking:error', onError);
       socket.emit('leave_order_room', { orderId: id });
-      socket.disconnect();
+
+      // The singleton is shared across the app (menu, checkout, other tracking
+      // hooks), so do NOT blindly disconnect on unmount — another consumer may
+      // still need the connection. Only tear it down if this was the last user,
+      // which we approximate by disconnecting only when nothing else is active.
+      // Other consumers call getSocket() and manage their own lifecycle, so we
+      // leave the shared connection in place here.
     };
   }, [id, order]);
 
@@ -289,6 +342,94 @@ const OrderTracking = () => {
               )}
             </div>
           </motion.div>
+
+          {/* Confirm receipt + complaint */}
+          {order.status === 'delivered' && order.status !== 'received' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="border p-6"
+              style={{ background: SURFACE, borderColor: BORDER }}
+            >
+              {!confirmMsg ? (
+                <>
+                  <p className="text-[10px] text-center font-semibold uppercase tracking-widest mb-1" style={{ color: OLIVE_LIGHT }}>
+                    GOT YOUR ORDER?
+                  </p>
+                  <p className="text-xs text-center font-mono mb-4" style={{ color: "#5a6a5a" }}>
+                    Confirm receipt so we know it arrived safely.
+                  </p>
+                  <button
+                    onClick={handleConfirmReceipt}
+                    disabled={confirming}
+                    className="w-full text-center font-black tracking-tighter py-3 transition disabled:opacity-50"
+                    style={{ background: OLIVE, color: '#fff', fontFamily: 'Arial Black, sans-serif', fontSize: '14px' }}
+                  >
+                    {confirming ? 'CONFIRMING...' : "I'VE RECEIVED MY ORDER ✓"}
+                  </button>
+                </>
+              ) : (
+                <p className="text-center text-sm font-mono" style={{ color: OLIVE_LIGHT }}>
+                  {confirmMsg}
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {/* Complaint box — available once received */}
+          {order.status === 'received' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="border p-6"
+              style={{ background: SURFACE, borderColor: BORDER }}
+            >
+              {!showComplaintForm ? (
+                <button
+                  onClick={() => setShowComplaintForm(true)}
+                  className="w-full text-center text-[11px] font-semibold uppercase tracking-widest py-3 border transition-colors"
+                  style={{ borderColor: BORDER, color: OLIVE_LIGHT }}
+                >
+                  📝 Having an issue? File a complaint
+                </button>
+              ) : (
+                <form onSubmit={handleSubmitComplaint}>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: OLIVE_LIGHT }}>
+                    FILE A COMPLAINT
+                  </p>
+                  <textarea
+                    value={complaint}
+                    onChange={(e) => setComplaint(e.target.value)}
+                    required
+                    minLength={10}
+                    maxLength={1000}
+                    rows={4}
+                    placeholder="Tell us what went wrong (min. 10 characters)..."
+                    className="w-full bg-neutral-900 border text-white text-sm font-mono px-3 py-2 mb-2 focus:outline-none resize-none"
+                    style={{ borderColor: BORDER }}
+                  />
+                  {complaintError && (
+                    <p className="text-xs font-mono mb-2" style={{ color: "#b33939" }}>{complaintError}</p>
+                  )}
+                  {complaintSuccess && (
+                    <p className="text-xs font-mono mb-2" style={{ color: OLIVE_LIGHT }}>
+                      Complaint submitted. We'll get back to you shortly.
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={submittingComplaint}
+                    className="w-full text-center font-black tracking-tighter py-3 transition disabled:opacity-50"
+                    style={{ background: OLIVE, color: '#fff', fontFamily: 'Arial Black, sans-serif', fontSize: '13px' }}
+                  >
+                    {submittingComplaint ? 'SUBMITTING...' : 'SUBMIT COMPLAINT'}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

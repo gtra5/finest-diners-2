@@ -6,7 +6,7 @@ import Herosection from "../components/herosection";
 
 import BurgerFuelHero from "../components/advertisement";
 import Section4 from "../components/section4";
-import { useCart } from "../context/CartContext";
+import { useCartStore } from "../stores/cartStore";
 import {
   Flame,
   Leaf,
@@ -36,7 +36,8 @@ const CATS = [
 
 export default function Home() {
   const heroRef = useRef(null);
-  const { cartItems, addItem } = useCart();
+  const cartItems = useCartStore((s) => s.cartItems);
+  const addItem = useCartStore((s) => s.addItem);
   const [foods, setFoods] = useState([]);
   const [flashSale, setFlashSale] = useState([]);
   const [loading, setLoading] = useState(true);

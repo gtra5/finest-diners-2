@@ -176,6 +176,8 @@ export default function About() {
         <img
           src={HeroBg}
           alt=""
+          loading="eager"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ mixBlendMode: "multiply" }}
         />
@@ -253,6 +255,8 @@ export default function About() {
               <img
                 src={item.src}
                 alt={item.label}
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: "100%",
                   height: 320,
@@ -450,6 +454,8 @@ export default function About() {
         <img
           src={HeroBg}
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ opacity: 0.04, zIndex: 0 }}
         />

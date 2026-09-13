@@ -1,6 +1,6 @@
 const OLIVE = "#6B7C2F";
 const OLIVE_LIGHT = "#D4E2B9";
-const DARK = "#050A0A";
+const DARK = "#FFFFFF";
 
 /**
  * A ticket-style divider used across the account and checkout screens.
@@ -15,7 +15,7 @@ export default function TicketBand({ label = "ADMIT ONE" }) {
       style={{
         background: OLIVE,
         borderColor: OLIVE,
-        color: DARK,
+        
       }}
     >
       <span

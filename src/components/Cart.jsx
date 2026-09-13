@@ -1,10 +1,10 @@
-import { useCart } from '../context/CartContext';
+import { useCartStore } from '../stores/cartStore';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 
 const Cart = ({ isOpen, onClose }) => {
-  const { cartItems, removeItem, addItem, totalPrice, totalItems, restaurantId } = useCart();
-  const { user } = useAuth();
+  const { cartItems, removeItem, addItem, totalPrice, totalItems, restaurantId } = useCartStore();
+  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -41,6 +41,8 @@ const Cart = ({ isOpen, onClose }) => {
                 <img
                   src={item.imageUrl || 'https://via.placeholder.com/60'}
                   alt={item.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-14 h-14 rounded-xl object-cover"
                 />
                 <div className="flex-1">

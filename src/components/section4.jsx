@@ -323,6 +323,8 @@ function Section4() {
             <img
               src={item.image}
               alt={item.label}
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 height: "clamp(150px, 20vw, 340px)",
